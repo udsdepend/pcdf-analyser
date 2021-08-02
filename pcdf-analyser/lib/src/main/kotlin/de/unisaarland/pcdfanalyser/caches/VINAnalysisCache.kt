@@ -4,6 +4,7 @@ import de.unisaarland.pcdfanalyser.FileEventStream
 import de.unisaarland.pcdfanalyser.analysers.VINAnalysis
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.TransactionManager
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.sql.Connection
 
@@ -13,7 +14,7 @@ class VINAnalysisCache(val cacheFile: File): AnalysisCache<String>() {
         val fileName: Column<String> = varchar("fileName", 1024)
         val analysisResult: Column<String?> = varchar("VIN", 16).nullable()
         val analyserVersion: Column<Int> = integer("analyserVersion")
-        override val primaryKey = PrimaryKey(fileName, name = "PK_VINAnalysis")
+        override val primaryKey = PrimaryKey(fileName, name = "PK_VINAnalyses")
     }
 
     private val database: Database = Database.connect("jdbc:sqlite:${cacheFile.absolutePath}", "org.sqlite.JDBC")
@@ -24,15 +25,29 @@ class VINAnalysisCache(val cacheFile: File): AnalysisCache<String>() {
 
 
     private fun fetchAnalysisResult(pcdfFile: File): Pair<Boolean, String?> {
-        VINAnalyses.select { VINAnalyses.fileName eq pcdfFile.absolutePath }.forEach {
-            return Pair(true, it[VINAnalyses.analysisResult]) // result could still be null if no VIN record is in PCDF file
+        var result: Pair<Boolean, String?>? = null
+        transaction(database) {
+            VINAnalyses.select { VINAnalyses.fileName eq pcdfFile.absolutePath }.forEach {
+                result = Pair(
+                    true,
+                    it[VINAnalyses.analysisResult]
+                ) // result could still be null if no VIN record is in PCDF file
+            }
         }
 
-        return Pair(false, null)
+        return if (result == null) {
+            Pair(false, null)
+        } else {
+            result!!
+        }
+
+
     }
 
     override fun hasAnalysisResultForFile(pcdfFile: File): Boolean {
-        return VINAnalyses.select { VINAnalyses.fileName eq pcdfFile.absolutePath }.count() > 0
+        return transaction(database) {
+            VINAnalyses.select { VINAnalyses.fileName eq pcdfFile.absolutePath }.count() > 0
+        }
     }
 
     override fun cachedAnalysisResultForFile(pcdfFile: File): String? {
@@ -40,10 +55,12 @@ class VINAnalysisCache(val cacheFile: File): AnalysisCache<String>() {
     }
 
     private fun addAnalysisResultToCache(pcdfFile: File, result: String?) {
-        VINAnalyses.insert {
-            it[fileName] = pcdfFile.absolutePath
-            it[analysisResult] = result
-            it[analyserVersion] = VERSION
+        transaction(database) {
+            VINAnalyses.insert {
+                it[fileName] = pcdfFile.absolutePath
+                it[analysisResult] = result
+                it[analyserVersion] = VERSION
+            }
         }
     }
 
