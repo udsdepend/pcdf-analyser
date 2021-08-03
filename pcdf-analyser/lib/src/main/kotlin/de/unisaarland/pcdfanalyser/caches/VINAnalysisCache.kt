@@ -8,7 +8,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.sql.Connection
 
-class VINAnalysisCache(val cacheFile: File): AnalysisCache<String>() {
+class VINAnalysisCache(val database: Database): AnalysisCache<String>() {
+
+    constructor(cacheFile: File): this(Database.connect("jdbc:sqlite:${cacheFile.absolutePath}", "org.sqlite.JDBC"))
 
     object VINAnalyses: Table() {
         val fileName: Column<String> = varchar("fileName", 1024)
@@ -16,8 +18,6 @@ class VINAnalysisCache(val cacheFile: File): AnalysisCache<String>() {
         val analyserVersion: Column<Int> = integer("analyserVersion")
         override val primaryKey = PrimaryKey(fileName, name = "PK_VINAnalyses")
     }
-
-    private val database: Database = Database.connect("jdbc:sqlite:${cacheFile.absolutePath}", "org.sqlite.JDBC")
 
     private fun enableLogging(t: Transaction) {
         t.addLogger(StdOutSqlLogger)
@@ -27,7 +27,7 @@ class VINAnalysisCache(val cacheFile: File): AnalysisCache<String>() {
         TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
         transaction(database) {
             enableLogging(this)
-            SchemaUtils.create (VINAnalyses)
+            SchemaUtils.create(VINAnalyses)
         }
     }
 

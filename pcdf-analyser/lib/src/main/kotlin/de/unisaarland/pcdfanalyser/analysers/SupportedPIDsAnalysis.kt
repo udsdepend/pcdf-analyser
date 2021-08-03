@@ -1,51 +1,73 @@
 package de.unisaarland.pcdfanalyser.analysers
 
 import de.unisaarland.pcdfanalyser.EventStream
-import pcdfEvent.events.obdEvents.OBDCommand
+import de.unisaarland.pcdfanalyser.model.ParameterID
+import de.unisaarland.pcdfanalyser.model.ParameterSupport
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.OBDIntermediateEvent
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.singleComponentEvents.SupportedPidsEvent
 
-typealias PID = Int
+class SupportedPIDsAnalysis(eventStream: EventStream): CacheableAnalysis<ParameterSupport>(eventStream) {
 
-class SupportedPIDsAnalysis(eventStream: EventStream, val doConsistencyCheck: Boolean = false): CacheableAnalysis<SupportedPIDsAnalysis.AnalysisResult>(eventStream) {
-
-    private var result: SupportedPIDsAnalysis.AnalysisResult? = null
+    private var result: ParameterSupport? = null
 
     fun prepare() {
         if (result != null) {
             return
         }
 
-        val supported = mutableListOf<PID>()
-        val discovered = if (doConsistencyCheck) mutableSetOf<PID>() else null
+        val supported = mutableListOf<ParameterID>()
+        val available = mutableSetOf<ParameterID>()
 
-        var timeout = 30
+        var timeout = 120
         for (event in eventStream) {
             when (event) {
-                is SupportedPidsEvent -> {if (event.mode == 1) supported.addAll(event.supportedPids)}
+                is SupportedPidsEvent -> supported.addAll(event.supportedPids.map { ParameterID(it, event.mode) })
                 is OBDIntermediateEvent -> {
-                    if (doConsistencyCheck) {
-                        if (event.mode == 1) {
-                            discovered!!.add(event.pid)
-                        }
-                    } else {
-                        timeout--
-                        if (timeout == 0)
-                            break
-                    }
+                    available.add(ParameterID(event.pid, event.mode))
+                    timeout--
+                    if (timeout == 0)
+                        break
                 }
                 else -> { /* no-op */ }
             }
         }
 
-        val consistent: Boolean? = if (doConsistencyCheck) {
-            supported.toSet().containsAll(discovered!!)
-        } else {
-            null
+        println("supported: ${supported}, available: $available")
+
+        // Merge lists
+        val supportedSorted = supported.sorted()
+        val availableSorted = available.sorted()
+        val supportedIterator = supportedSorted.iterator()
+        val availableIterator = availableSorted.iterator()
+
+        val records: MutableList<ParameterSupport.Record> = mutableListOf()
+
+        var currentSupported: ParameterID? = if(supportedIterator.hasNext()) supportedIterator.next() else null
+        var currentAvailable: ParameterID? = if(availableIterator.hasNext()) availableIterator.next() else null
+        while (currentSupported != null || currentAvailable != null) {
+            if (currentSupported == currentAvailable) {
+                records.add(ParameterSupport.Record(currentSupported!!, true, true))
+                currentSupported = if(supportedIterator.hasNext()) supportedIterator.next() else null
+                currentAvailable = if(availableIterator.hasNext()) availableIterator.next() else null
+            } else if (currentSupported == null) {
+                records.add(ParameterSupport.Record(currentAvailable!!, false, true))
+                currentAvailable = if(availableIterator.hasNext()) availableIterator.next() else null
+            } else if (currentAvailable == null) {
+                records.add(ParameterSupport.Record(currentSupported, true, false))
+                currentSupported = if(supportedIterator.hasNext()) supportedIterator.next() else null
+            } else if (currentSupported < currentAvailable) {
+                records.add(ParameterSupport.Record(currentSupported, true, false))
+                currentSupported = if(supportedIterator.hasNext()) supportedIterator.next() else null
+            } else if (currentAvailable < currentSupported) {
+                records.add(ParameterSupport.Record(currentAvailable, false, true))
+                currentAvailable = if(availableIterator.hasNext()) availableIterator.next() else null
+            } else {
+                throw Error("This case should be unreachable...")
+            }
         }
 
 
-        result = AnalysisResult(supported.sorted(), discovered?.toList()?.sorted(), consistent)
+        result = ParameterSupport(records)
     }
 
 
@@ -53,7 +75,7 @@ class SupportedPIDsAnalysis(eventStream: EventStream, val doConsistencyCheck: Bo
         return true
     }
 
-    override fun analyse(): AnalysisResult {
+    override fun analyse(): ParameterSupport {
         prepare()
         return result!!
     }
@@ -64,21 +86,15 @@ class SupportedPIDsAnalysis(eventStream: EventStream, val doConsistencyCheck: Bo
     }
 
 
-    class AnalysisResult(val supportedPIDs: List<PID>, val availablePIDs: List<PID>?, val consistent: Boolean?) {
-
-        fun nameForPID(pid: PID): String {
-            val command = OBDCommand.getCommand(1, pid)
-            if (command != null) {
-                return command.name
-            } else {
-                return "0x${pid.toString(16)}"
-            }
-        }
-
-        override fun toString(): String {
-            val supportedString = supportedPIDs.map {nameForPID(it)}
-            val availableString = availablePIDs?.map {nameForPID(it)} ?: "not analysed"
-            return "SupportedPIDs {supported=[$supportedString], available=[$availableString], consistent=$consistent}"
-        }
-    }
+//    class AnalysisResult(val supportedPIDs: List<ParameterID>, val availablePIDs: List<ParameterID>) {
+//
+//        val consistent: Boolean
+//        get() = supportedPIDs.toSet().containsAll(availablePIDs)
+//
+//        override fun toString(): String {
+//            val supportedString = supportedPIDs.map {it.toString()}
+//            val availableString = availablePIDs.map {it.toString()}
+//            return "SupportedPIDs {supported=[$supportedString], available=[$availableString]}"
+//        }
+//    }
 }
