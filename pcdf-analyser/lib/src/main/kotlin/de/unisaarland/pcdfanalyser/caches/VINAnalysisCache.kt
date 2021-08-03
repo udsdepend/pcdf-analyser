@@ -12,21 +12,30 @@ class VINAnalysisCache(val cacheFile: File): AnalysisCache<String>() {
 
     object VINAnalyses: Table() {
         val fileName: Column<String> = varchar("fileName", 1024)
-        val analysisResult: Column<String?> = varchar("VIN", 16).nullable()
+        val analysisResult: Column<String?> = varchar("VIN", 17).nullable()
         val analyserVersion: Column<Int> = integer("analyserVersion")
         override val primaryKey = PrimaryKey(fileName, name = "PK_VINAnalyses")
     }
 
     private val database: Database = Database.connect("jdbc:sqlite:${cacheFile.absolutePath}", "org.sqlite.JDBC")
 
+    private fun enableLogging(t: Transaction) {
+        t.addLogger(StdOutSqlLogger)
+    }
+
     init {
         TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
+        transaction(database) {
+            enableLogging(this)
+            SchemaUtils.create (VINAnalyses)
+        }
     }
 
 
     private fun fetchAnalysisResult(pcdfFile: File): Pair<Boolean, String?> {
         var result: Pair<Boolean, String?>? = null
         transaction(database) {
+            enableLogging(this)
             VINAnalyses.select { VINAnalyses.fileName eq pcdfFile.absolutePath }.forEach {
                 result = Pair(
                     true,
@@ -46,6 +55,7 @@ class VINAnalysisCache(val cacheFile: File): AnalysisCache<String>() {
 
     override fun hasAnalysisResultForFile(pcdfFile: File): Boolean {
         return transaction(database) {
+            enableLogging(this)
             VINAnalyses.select { VINAnalyses.fileName eq pcdfFile.absolutePath }.count() > 0
         }
     }
@@ -56,6 +66,7 @@ class VINAnalysisCache(val cacheFile: File): AnalysisCache<String>() {
 
     private fun addAnalysisResultToCache(pcdfFile: File, result: String?) {
         transaction(database) {
+            enableLogging(this)
             VINAnalyses.insert {
                 it[fileName] = pcdfFile.absolutePath
                 it[analysisResult] = result
