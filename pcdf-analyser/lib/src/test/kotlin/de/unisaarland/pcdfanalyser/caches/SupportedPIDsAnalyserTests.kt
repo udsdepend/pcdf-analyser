@@ -7,7 +7,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class SupportedPIDsAnalysisTests {
+class SupportedPIDsAnalyserTests {
 
     val donation1 = ClassLoader.getSystemClassLoader().getResource("donation1.ppcdf")
 

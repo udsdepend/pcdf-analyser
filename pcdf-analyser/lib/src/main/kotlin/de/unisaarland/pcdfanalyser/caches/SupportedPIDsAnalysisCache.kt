@@ -1,7 +1,7 @@
 package de.unisaarland.pcdfanalyser.caches
 
 import de.unisaarland.pcdfanalyser.FileEventStream
-import de.unisaarland.pcdfanalyser.analysers.SupportedPIDsAnalysis
+import de.unisaarland.pcdfanalyser.analysers.SupportedPIDsAnalyser
 import de.unisaarland.pcdfanalyser.model.ParameterID
 import de.unisaarland.pcdfanalyser.model.ParameterSupport
 import org.jetbrains.exposed.sql.*
@@ -10,7 +10,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.sql.Connection
 
-class SupportedPIDsAnalysisCache(val database: Database, val analysisCacheDelegate: AnalysisCacheDelegate<ParameterSupport> = AnalysisCacheDelegate { SupportedPIDsAnalysis(it) }): AnalysisCache<ParameterSupport>() {
+class SupportedPIDsAnalysisCache(val database: Database, val analysisCacheDelegate: AnalysisCacheDelegate<ParameterSupport> = AnalysisCacheDelegate { SupportedPIDsAnalyser(it) }): AnalysisCache<ParameterSupport>() {
 
     object SupportedPIDsAnalyses: Table() {
         val fileName: Column<String> = varchar("fileName", 1024)

@@ -3,7 +3,7 @@ package de.unisaarland.pcdfanalyser.analysers
 import de.unisaarland.pcdfanalyser.EventStream
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.singleComponentEvents.VINEvent
 
-class VINAnalysis(eventStream: EventStream): Analyser<String?>(eventStream) {
+class VINAnalyser(eventStream: EventStream): Analyser<String?>(eventStream) {
 
     private var vin: String? = null
     private var prepared = false

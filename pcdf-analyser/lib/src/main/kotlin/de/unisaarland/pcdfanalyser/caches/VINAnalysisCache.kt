@@ -1,14 +1,14 @@
 package de.unisaarland.pcdfanalyser.caches
 
 import de.unisaarland.pcdfanalyser.FileEventStream
-import de.unisaarland.pcdfanalyser.analysers.VINAnalysis
+import de.unisaarland.pcdfanalyser.analysers.VINAnalyser
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.sql.Connection
 
-class VINAnalysisCache(val database: Database, val analysisCacheDelegate: AnalysisCacheDelegate<String?> = AnalysisCacheDelegate{ VINAnalysis(it) }): AnalysisCache<String?>() {
+class VINAnalysisCache(val database: Database, val analysisCacheDelegate: AnalysisCacheDelegate<String?> = AnalysisCacheDelegate{ VINAnalyser(it) }): AnalysisCache<String?>() {
 
     object VINAnalyses: Table() {
         val fileName: Column<String> = varchar("fileName", 1024)

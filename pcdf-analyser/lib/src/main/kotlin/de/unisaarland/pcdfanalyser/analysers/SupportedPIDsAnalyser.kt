@@ -6,7 +6,7 @@ import de.unisaarland.pcdfanalyser.model.ParameterSupport
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.OBDIntermediateEvent
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.singleComponentEvents.SupportedPidsEvent
 
-class SupportedPIDsAnalysis(eventStream: EventStream): Analyser<ParameterSupport>(eventStream) {
+class SupportedPIDsAnalyser(eventStream: EventStream): Analyser<ParameterSupport>(eventStream) {
 
     private var result: ParameterSupport? = null
 
