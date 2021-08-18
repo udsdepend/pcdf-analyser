@@ -49,7 +49,7 @@ class SharedCacheTests {
         assertEquals("WVGZZZ5NZGWZZZZZZ", vinCache.cachedAnalysisResultForFile(file), "Previously computed and cached value must be equal.")
 
         val pidCache = SupportedPIDsAnalysisCache(db)
-        assertTrue(pidCache.cachedAnalysisResultForFile(file).parameterRecords.isNotEmpty(), "Cached value must be available.")
+        assertTrue(pidCache.cachedAnalysisResultForFile(file)?.parameterRecords?.isNotEmpty() ?: false, "Cached value must be available.")
     }
 
 }

@@ -10,9 +10,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.sql.Connection
 
-class SupportedPIDsAnalysisCache(val database: Database): AnalysisCache<ParameterSupport>() {
-
-    constructor(cacheFile: File): this(Database.connect("jdbc:sqlite:${cacheFile.absolutePath}", "org.sqlite.JDBC"))
+class SupportedPIDsAnalysisCache(val database: Database, val analysisCacheDelegate: AnalysisCacheDelegate<ParameterSupport> = AnalysisCacheDelegate { SupportedPIDsAnalysis(it) }): AnalysisCache<ParameterSupport>() {
 
     object SupportedPIDsAnalyses: Table() {
         val fileName: Column<String> = varchar("fileName", 1024)
@@ -37,7 +35,7 @@ class SupportedPIDsAnalysisCache(val database: Database): AnalysisCache<Paramete
     }
 
 
-    private fun fetchAnalysisResult(pcdfFile: File): Pair<Boolean, ParameterSupport> {
+    private fun fetchAnalysisResult(pcdfFile: File): ParameterSupport? {
         val records = mutableListOf<ParameterSupport.Record>()
         transaction(database) {
             enableLogging(this)
@@ -50,9 +48,9 @@ class SupportedPIDsAnalysisCache(val database: Database): AnalysisCache<Paramete
         }
 
         return if (records.isEmpty()) {
-            Pair(false, ParameterSupport())
+            null
         } else {
-            Pair(true, ParameterSupport(records))
+            ParameterSupport(records)
         }
 
 
@@ -66,8 +64,8 @@ class SupportedPIDsAnalysisCache(val database: Database): AnalysisCache<Paramete
         }
     }
 
-    override fun cachedAnalysisResultForFile(pcdfFile: File): ParameterSupport {
-        return fetchAnalysisResult(pcdfFile).second
+    override fun cachedAnalysisResultForFile(pcdfFile: File): ParameterSupport? {
+        return fetchAnalysisResult(pcdfFile)
     }
 
     private fun addAnalysisResultToCache(pcdfFile: File, result: ParameterSupport) {
@@ -89,15 +87,15 @@ class SupportedPIDsAnalysisCache(val database: Database): AnalysisCache<Paramete
 
     override fun analysisResultForFile(pcdfFile: File, cacheResult: Boolean): ParameterSupport {
         val fetchResult = fetchAnalysisResult(pcdfFile)
-        return if (!fetchResult.first) {
-            val analyser = SupportedPIDsAnalysis(FileEventStream(pcdfFile))
+        return if (fetchResult == null) {
+            val analyser = analysisCacheDelegate.analyserForEventStream(FileEventStream(pcdfFile))
             val result = analyser.analyse()
             if (cacheResult) {
                 addAnalysisResultToCache(pcdfFile, result)
             }
             result
         } else {
-            fetchResult.second
+            fetchResult
         }
     }
 

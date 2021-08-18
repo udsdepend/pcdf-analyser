@@ -9,8 +9,7 @@ abstract class AnalysisCache<V> {
 
     abstract fun cachedAnalysisResultForFile(pcdfFile: File): V?
 
-    abstract fun analysisResultForFile(pcdfFile: File, cacheResult: Boolean = true): V?
-
+    abstract fun analysisResultForFile(pcdfFile: File, cacheResult: Boolean = true): V
 
 
     companion object {

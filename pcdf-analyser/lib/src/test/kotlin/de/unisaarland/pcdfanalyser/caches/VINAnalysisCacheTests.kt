@@ -22,7 +22,7 @@ class VINAnalysisCacheTests {
             cacheFile.delete()
         }
 
-        val vinCache = VINAnalysisCache(cacheFile)
+        val vinCache = VINAnalysisCache(AnalysisCache.sharedDatabase(cacheFile))
         assertFalse("Analysis result must NOT be cached") { vinCache.hasAnalysisResultForFile(file) }
         val result = vinCache.analysisResultForFile(file, false)
         assertFalse("Analysis result must NOT be cached (2)") { vinCache.hasAnalysisResultForFile(file) }

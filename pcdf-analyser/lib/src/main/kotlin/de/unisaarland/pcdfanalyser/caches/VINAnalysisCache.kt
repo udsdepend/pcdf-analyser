@@ -8,9 +8,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.sql.Connection
 
-class VINAnalysisCache(val database: Database): AnalysisCache<String>() {
-
-    constructor(cacheFile: File): this(Database.connect("jdbc:sqlite:${cacheFile.absolutePath}", "org.sqlite.JDBC"))
+class VINAnalysisCache(val database: Database, val analysisCacheDelegate: AnalysisCacheDelegate<String?> = AnalysisCacheDelegate{ VINAnalysis(it) }): AnalysisCache<String?>() {
 
     object VINAnalyses: Table() {
         val fileName: Column<String> = varchar("fileName", 1024)
@@ -78,7 +76,7 @@ class VINAnalysisCache(val database: Database): AnalysisCache<String>() {
     override fun analysisResultForFile(pcdfFile: File, cacheResult: Boolean): String? {
         val fetchResult = fetchAnalysisResult(pcdfFile)
         return if (!fetchResult.first) {
-            val analyser = VINAnalysis(FileEventStream(pcdfFile))
+            val analyser = analysisCacheDelegate.analyserForEventStream(FileEventStream(pcdfFile))
             val result = analyser.analyse()
             if (cacheResult) {
                 addAnalysisResultToCache(pcdfFile, result)
