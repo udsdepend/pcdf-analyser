@@ -13,6 +13,7 @@ class VINAnalysisCache(val database: Database, val analysisCacheDelegate: Analys
     object VINAnalyses: Table() {
         val fileName: Column<String> = varchar("fileName", 1024)
         val analysisResult: Column<String?> = varchar("VIN", 17).nullable()
+        //val analysisError: Column<String?> = text("error").nullable()
         val analyserVersion: Column<Int> = integer("analyserVersion")
         override val primaryKey = PrimaryKey(fileName, name = "PK_VINAnalyses")
     }

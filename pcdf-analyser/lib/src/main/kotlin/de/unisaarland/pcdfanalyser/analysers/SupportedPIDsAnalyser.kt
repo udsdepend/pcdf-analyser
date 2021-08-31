@@ -15,7 +15,7 @@ class SupportedPIDsAnalyser(eventStream: EventStream): Analyser<ParameterSupport
             return
         }
 
-        val supported = mutableListOf<ParameterID>()
+        val supported = mutableSetOf<ParameterID>()
         val available = mutableSetOf<ParameterID>()
 
         var timeout = 120

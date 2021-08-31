@@ -12,6 +12,7 @@ class FileEventStream private constructor(private val reader: Reader, private va
     constructor(file: File, charset: Charset = Charsets.UTF_8): this(file.bufferedReader(charset))
 
     private var eventCache: List<PCDFEvent> = listOf()
+    private var parseError: Exception? = null
 
     private fun loadEvents() {
         if (eventCache.isNotEmpty()) {
@@ -24,9 +25,20 @@ class FileEventStream private constructor(private val reader: Reader, private va
 
     // This method may be called externally for performance reasons
     fun prepareStream() {
-        if (cacheEvents && eventCache.isEmpty()) {
-            loadEvents()
+        // Ensure that the full record is loaded
+        // (i.e., if an error occurs during parsing, rethrow it every time)
+        if (this.parseError != null) {
+            throw this.parseError!!
         }
+        try {
+            if (cacheEvents && eventCache.isEmpty()) {
+                loadEvents()
+            }
+        } catch (e: Exception) {
+            this.parseError = e
+            throw e
+        }
+
     }
 
     override fun iterator(): Iterator<PCDFEvent> {
