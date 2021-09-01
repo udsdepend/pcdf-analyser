@@ -30,7 +30,8 @@ plugins {
 }
 
 repositories {
-    mavenLocal()
+    //mavenLocal()
+    maven("https://jitpack.io")
 
     // Use Maven Central for resolving dependencies.
     mavenCentral()
@@ -60,7 +61,8 @@ dependencies {
     api("org.apache.commons:commons-math3:3.6.1")
 
     // PCDF core
-    implementation("de.unisaarland.pcdf:pcdfcore:1.0.0")
+//    implementation("de.unisaarland.cdp:pcdf-core:1.0.0")
+    implementation("com.github.dependables:pcdf-core:196624b")
 
     val exposedVersion: String by project
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
