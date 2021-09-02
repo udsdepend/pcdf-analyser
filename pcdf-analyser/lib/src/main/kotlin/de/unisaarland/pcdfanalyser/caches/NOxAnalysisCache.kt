@@ -1,45 +1,40 @@
 package de.unisaarland.pcdfanalyser.caches
 
+import com.squareup.sqldelight.db.SqlDriver
+import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
+import de.unisaarland.caches.CacheDatabase
+import de.unisaarland.caches.NOxAnalysisQueries
 import de.unisaarland.pcdfanalyser.FileEventStream
 import de.unisaarland.pcdfanalyser.analysers.NOxAnalyser
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.TransactionManager
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
-import java.sql.Connection
 
-class NOxAnalysisCache(val database: Database, val analysisCacheDelegate: AnalysisCacheDelegate<Double?> = AnalysisCacheDelegate { NOxAnalyser(it) }): AnalysisCache<Double?>() {
-
-    object NOxAnalyses: Table() {
-        val fileName: Column<String> = varchar("fileName", 1024)
-        val analysisResult: Column<Double?> = double("nox").nullable()
-        val analyserVersion: Column<Int> = integer("analyserVersion")
-        override val primaryKey = PrimaryKey(fileName, name = "PK_NOxAnalyses")
+class NOxAnalysisCache(
+    file: File,
+    val analysisCacheDelegate: AnalysisCacheDelegate<Double?> = AnalysisCacheDelegate {
+        NOxAnalyser(it)
     }
-
-    private fun enableLogging(t: Transaction) {
-        t.addLogger(StdOutSqlLogger)
-    }
+) : AnalysisCache<Double?>() {
+    private val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${file.path}")
+    private val database: CacheDatabase
+    private val queries: NOxAnalysisQueries
 
     init {
-        TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
-        transaction(database) {
-            enableLogging(this)
-            SchemaUtils.create(NOxAnalyses)
+        try {
+            CacheDatabase.Schema.create(driver)
+        } catch (e: Exception) {
+            // Table was already created
         }
+        database = CacheDatabase(driver)
+        queries = database.nOxAnalysisQueries
     }
-
 
     private fun fetchAnalysisResult(pcdfFile: File): Pair<Boolean, Double?> {
         var result: Pair<Boolean, Double?>? = null
-        transaction(database) {
-            enableLogging(this)
-            NOxAnalyses.select { NOxAnalyses.fileName eq pcdfFile.absolutePath }.forEach {
-                result = Pair(
-                    true,
-                    it[NOxAnalyses.analysisResult]
-                ) // result could still be null if no NOx records are in PCDF file
-            }
+        queries.selectByName(pcdfFile.absolutePath).executeAsList().forEach {
+            result = Pair(
+                true,
+                it.anylsis_result
+            )
         }
 
         return if (result == null) {
@@ -47,30 +42,14 @@ class NOxAnalysisCache(val database: Database, val analysisCacheDelegate: Analys
         } else {
             result!!
         }
-
-
     }
 
     override fun hasAnalysisResultForFile(pcdfFile: File): Boolean {
-        return transaction(database) {
-            enableLogging(this)
-            NOxAnalyses.select { NOxAnalyses.fileName eq pcdfFile.absolutePath }.count() > 0
-        }
+        return queries.selectByName(pcdfFile.absolutePath).executeAsList().isNotEmpty()
     }
 
     override fun cachedAnalysisResultForFile(pcdfFile: File): Double? {
         return fetchAnalysisResult(pcdfFile).second
-    }
-
-    private fun addAnalysisResultToCache(pcdfFile: File, result: Double?) {
-        transaction(database) {
-            enableLogging(this)
-            NOxAnalyses.insert {
-                it[fileName] = pcdfFile.absolutePath
-                it[analysisResult] = result
-                it[analyserVersion] = VERSION
-            }
-        }
     }
 
     override fun analysisResultForFile(pcdfFile: File, cacheResult: Boolean): Double? {
@@ -87,10 +66,16 @@ class NOxAnalysisCache(val database: Database, val analysisCacheDelegate: Analys
         }
     }
 
-
+    private fun addAnalysisResultToCache(pcdfFile: File, result: Double?) {
+        queries.insert(
+            pcdfFile.absolutePath,
+            result,
+            VERSION
+        )
+    }
 
     companion object {
-        const val VERSION: Int = 1
+        const val VERSION = 1
     }
 
 }

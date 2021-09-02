@@ -1,0 +1,19 @@
+CREATE TABLE VINAnalysis (
+  file_name TEXT NOT NULL,
+  anylsis_result TEXT,
+  anylser_version INTEGER AS Int NOT NULL,
+  PRIMARY KEY (file_name)
+);
+
+selectAll:
+SELECT *
+FROM VINAnalysis;
+
+insert:
+INSERT INTO VINAnalysis(file_name, anylsis_result, anylser_version)
+VALUES (?, ? ,?);
+
+selectByName:
+SELECT *
+FROM VINAnalysis
+WHERE file_name = ?;

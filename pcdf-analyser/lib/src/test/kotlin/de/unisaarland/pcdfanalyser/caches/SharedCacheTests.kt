@@ -22,15 +22,15 @@ class SharedCacheTests {
             cacheFile.delete()
         }
 
-        val db = AnalysisCache.sharedDatabase(cacheFile)
+        AnalysisCache.sharedDatabase(cacheFile)
 
-        val vinCache = VINAnalysisCache(db)
+        val vinCache = VINAnalysisCache(cacheFile)
         assertFalse("Analysis result must NOT be cached (2)") { vinCache.hasAnalysisResultForFile(file) }
         val vinResult = vinCache.analysisResultForFile(file, true)
         assertTrue("Analysis result MUST be cached") { vinCache.hasAnalysisResultForFile(file) }
         assertEquals(vinResult, vinCache.cachedAnalysisResultForFile(file), "Computed and cached value must be equal.")
 
-        val pidCache = SupportedPIDsAnalysisCache(db)
+        val pidCache = SupportedPIDsAnalysisCache(cacheFile)
         assertFalse("Analysis result must NOT be cached (2)") { pidCache.hasAnalysisResultForFile(file) }
         val pidResult = pidCache.analysisResultForFile(file, true)
         assertTrue("Analysis result MUST be cached") { pidCache.hasAnalysisResultForFile(file) }
@@ -43,12 +43,12 @@ class SharedCacheTests {
         val cacheFile = File("/tmp/pcdf-analyser-test-shared-cache.db")
         assertTrue("Cache file must already exist (execute all tests in this suite)") { cacheFile.exists() }
 
-        val db = AnalysisCache.sharedDatabase(cacheFile)
+        AnalysisCache.sharedDatabase(cacheFile)
 
-        val vinCache = VINAnalysisCache(db)
+        val vinCache = VINAnalysisCache(cacheFile)
         assertEquals("WVGZZZ5NZGWZZZZZZ", vinCache.cachedAnalysisResultForFile(file), "Previously computed and cached value must be equal.")
 
-        val pidCache = SupportedPIDsAnalysisCache(db)
+        val pidCache = SupportedPIDsAnalysisCache(cacheFile)
         assertTrue(pidCache.cachedAnalysisResultForFile(file)?.parameterRecords?.isNotEmpty() ?: false, "Cached value must be available.")
     }
 

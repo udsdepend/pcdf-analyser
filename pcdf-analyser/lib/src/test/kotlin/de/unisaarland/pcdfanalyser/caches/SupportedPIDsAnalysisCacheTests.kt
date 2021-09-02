@@ -22,7 +22,7 @@ class SupportedPIDsAnalysisCacheTests {
             cacheFile.delete()
         }
 
-        val pidCache = SupportedPIDsAnalysisCache(AnalysisCache.sharedDatabase(cacheFile))
+        val pidCache = SupportedPIDsAnalysisCache(cacheFile)
         assertFalse("Analysis result must NOT be cached") { pidCache.hasAnalysisResultForFile(file) }
         val result = pidCache.analysisResultForFile(file, false)
         println(result)

@@ -1,0 +1,19 @@
+CREATE TABLE NOxAnalysis (
+      file_name TEXT NOT NULL,
+      anylsis_result REAL,
+      anylser_version INTEGER AS Int NOT NULL,
+      PRIMARY KEY (file_name)
+);
+
+selectAll:
+SELECT *
+FROM NOxAnalysis;
+
+insert:
+INSERT INTO NOxAnalysis(file_name, anylsis_result, anylser_version)
+VALUES (?,?,?);
+
+selectByName:
+SELECT *
+FROM NOxAnalysis
+WHERE file_name = ?;

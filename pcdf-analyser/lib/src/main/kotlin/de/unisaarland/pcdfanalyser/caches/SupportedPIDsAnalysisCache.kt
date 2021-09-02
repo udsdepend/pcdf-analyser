@@ -1,50 +1,49 @@
 package de.unisaarland.pcdfanalyser.caches
 
+import com.squareup.sqldelight.db.SqlDriver
+import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
+import de.unisaarland.caches.CacheDatabase
+import de.unisaarland.caches.SupportedPIDsAnalysisQueries
 import de.unisaarland.pcdfanalyser.FileEventStream
 import de.unisaarland.pcdfanalyser.analysers.SupportedPIDsAnalyser
 import de.unisaarland.pcdfanalyser.model.ParameterID
 import de.unisaarland.pcdfanalyser.model.ParameterSupport
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.TransactionManager
-import org.jetbrains.exposed.sql.transactions.transaction
+import de.unisaarland.pcdfanalyser.model.ParameterSupport.Record
 import java.io.File
-import java.sql.Connection
 
-class SupportedPIDsAnalysisCache(val database: Database, val analysisCacheDelegate: AnalysisCacheDelegate<ParameterSupport> = AnalysisCacheDelegate { SupportedPIDsAnalyser(it) }): AnalysisCache<ParameterSupport>() {
-
-    object SupportedPIDsAnalyses: Table() {
-        val fileName: Column<String> = varchar("fileName", 1024)
-        val mode: Column<Int> = integer("mode")
-        val pid: Column<Int> = integer("PID")
-        val isSupported: Column<Boolean> = bool("isSupported")
-        val isAvailable: Column<Boolean> = bool("isAvailable")
-        val analyserVersion: Column<Int> = integer("analyserVersion")
-        override val primaryKey = PrimaryKey(fileName, mode, pid, name = "PK_SupportedPIDsAnalyses")
+class SupportedPIDsAnalysisCache(
+    val file: File,
+    val analysisCacheDelegate: AnalysisCacheDelegate<ParameterSupport> = AnalysisCacheDelegate {
+        SupportedPIDsAnalyser(
+            it
+        )
     }
+) : AnalysisCache<ParameterSupport>() {
 
-    private fun enableLogging(t: Transaction) {
-        t.addLogger(StdOutSqlLogger)
-    }
+    private val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${file.path}")
+    private val database: CacheDatabase
+    private val queries: SupportedPIDsAnalysisQueries
 
     init {
-        TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
-        transaction(database) {
-            enableLogging(this)
-            SchemaUtils.create(SupportedPIDsAnalyses)
+        try {
+            CacheDatabase.Schema.create(driver)
+        } catch (e: Exception) {
+            // Table was already created
         }
+        database = CacheDatabase(driver)
+        queries = database.supportedPIDsAnalysisQueries
     }
 
-
     private fun fetchAnalysisResult(pcdfFile: File): ParameterSupport? {
-        val records = mutableListOf<ParameterSupport.Record>()
-        transaction(database) {
-            enableLogging(this)
-            SupportedPIDsAnalyses.select { SupportedPIDsAnalyses.fileName eq pcdfFile.absolutePath }.forEach {
-                val parameterID = ParameterID(it[SupportedPIDsAnalyses.pid], it[SupportedPIDsAnalyses.mode])
-                val supported = it[SupportedPIDsAnalyses.isSupported]
-                val available = it[SupportedPIDsAnalyses.isAvailable]
-                records.add(ParameterSupport.Record(parameterID, supported, available))
-            }
+        val records = mutableListOf<Record>()
+        queries.selectByName(pcdfFile.absolutePath).executeAsList().forEach {
+            records.add(
+                Record(
+                    ParameterID(it.pid, it.mode),
+                    it.isSupported,
+                    it.isAvailable
+                )
+            )
         }
 
         return if (records.isEmpty()) {
@@ -52,16 +51,10 @@ class SupportedPIDsAnalysisCache(val database: Database, val analysisCacheDelega
         } else {
             ParameterSupport(records)
         }
-
-
     }
 
-
     override fun hasAnalysisResultForFile(pcdfFile: File): Boolean {
-        return transaction(database) {
-            enableLogging(this)
-            SupportedPIDsAnalyses.select { SupportedPIDsAnalyses.fileName eq pcdfFile.absolutePath }.count() > 0
-        }
+        return queries.selectByName(pcdfFile.absolutePath).executeAsList().isNotEmpty()
     }
 
     override fun cachedAnalysisResultForFile(pcdfFile: File): ParameterSupport? {
@@ -69,19 +62,15 @@ class SupportedPIDsAnalysisCache(val database: Database, val analysisCacheDelega
     }
 
     private fun addAnalysisResultToCache(pcdfFile: File, result: ParameterSupport) {
-        transaction(database) {
-            enableLogging(this)
-            for (record in result.parameterRecords) {
-                SupportedPIDsAnalyses.insert {
-                    it[fileName] = pcdfFile.absolutePath
-                    it[pid] = record.parameterID.id
-                    it[mode] = record.parameterID.mode
-                    it[isSupported] = record.supported
-                    it[isAvailable] = record.available
-                    it[analyserVersion] = VERSION
-                }
-            }
-
+        for (record in result.parameterRecords) {
+            queries.insert(
+                pcdfFile.absolutePath,
+                record.parameterID.mode,
+                record.parameterID.id,
+                record.supported,
+                record.available,
+                VERSION
+            )
         }
     }
 
@@ -99,11 +88,8 @@ class SupportedPIDsAnalysisCache(val database: Database, val analysisCacheDelega
         }
     }
 
-
-
     companion object {
         const val VERSION: Int = 1
     }
-
 
 }

@@ -1,45 +1,44 @@
 package de.unisaarland.pcdfanalyser.caches
 
+import com.squareup.sqldelight.db.SqlDriver
+import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
+import de.unisaarland.caches.CacheDatabase
+import de.unisaarland.caches.VINAnalysisQueries
 import de.unisaarland.pcdfanalyser.FileEventStream
 import de.unisaarland.pcdfanalyser.analysers.VINAnalyser
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.TransactionManager
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
-import java.sql.Connection
 
-class VINAnalysisCache(val database: Database, val analysisCacheDelegate: AnalysisCacheDelegate<String?> = AnalysisCacheDelegate{ VINAnalyser(it) }): AnalysisCache<String?>() {
-
-    object VINAnalyses: Table() {
-        val fileName: Column<String> = varchar("fileName", 1024)
-        val analysisResult: Column<String?> = varchar("VIN", 17).nullable()
-        val analyserVersion: Column<Int> = integer("analyserVersion")
-        override val primaryKey = PrimaryKey(fileName, name = "PK_VINAnalyses")
+class VINAnalysisCache(
+    file: File,
+    val analysisCacheDelegate: AnalysisCacheDelegate<String?> = AnalysisCacheDelegate {
+        VINAnalyser(
+            it
+        )
     }
-
-    private fun enableLogging(t: Transaction) {
-        t.addLogger(StdOutSqlLogger)
-    }
+) :
+    AnalysisCache<String?>() {
+    //TODO: static file or variable?
+    private val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${file.path}")
+    private val database: CacheDatabase
+    private val queries: VINAnalysisQueries
 
     init {
-        TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
-        transaction(database) {
-            enableLogging(this)
-            SchemaUtils.create(VINAnalyses)
+        try {
+            CacheDatabase.Schema.create(driver)
+        } catch (e: Exception) {
+            // Table was already created
         }
+        database = CacheDatabase(driver)
+        queries = database.vINAnalysisQueries
     }
-
 
     private fun fetchAnalysisResult(pcdfFile: File): Pair<Boolean, String?> {
         var result: Pair<Boolean, String?>? = null
-        transaction(database) {
-            enableLogging(this)
-            VINAnalyses.select { VINAnalyses.fileName eq pcdfFile.absolutePath }.forEach {
-                result = Pair(
-                    true,
-                    it[VINAnalyses.analysisResult]
-                ) // result could still be null if no VIN record is in PCDF file
-            }
+        queries.selectByName(pcdfFile.absolutePath).executeAsList().forEach {
+            result = Pair(
+                true,
+                it.anylsis_result
+            )
         }
 
         return if (result == null) {
@@ -47,30 +46,14 @@ class VINAnalysisCache(val database: Database, val analysisCacheDelegate: Analys
         } else {
             result!!
         }
-
-
     }
 
     override fun hasAnalysisResultForFile(pcdfFile: File): Boolean {
-        return transaction(database) {
-            enableLogging(this)
-            VINAnalyses.select { VINAnalyses.fileName eq pcdfFile.absolutePath }.count() > 0
-        }
+        return queries.selectByName(pcdfFile.absolutePath).executeAsList().isNotEmpty()
     }
 
     override fun cachedAnalysisResultForFile(pcdfFile: File): String? {
         return fetchAnalysisResult(pcdfFile).second
-    }
-
-    private fun addAnalysisResultToCache(pcdfFile: File, result: String?) {
-        transaction(database) {
-            enableLogging(this)
-            VINAnalyses.insert {
-                it[fileName] = pcdfFile.absolutePath
-                it[analysisResult] = result
-                it[analyserVersion] = VERSION
-            }
-        }
     }
 
     override fun analysisResultForFile(pcdfFile: File, cacheResult: Boolean): String? {
@@ -87,10 +70,15 @@ class VINAnalysisCache(val database: Database, val analysisCacheDelegate: Analys
         }
     }
 
-
-
-    companion object {
-        const val VERSION: Int = 1
+    private fun addAnalysisResultToCache(pcdfFile: File, result: String?) {
+        queries.insert(
+            pcdfFile.absolutePath,
+            result,
+            VERSION
+        )
     }
 
+    companion object {
+        const val VERSION = 1
+    }
 }
