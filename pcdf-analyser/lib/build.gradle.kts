@@ -20,7 +20,7 @@ buildscript {
 }
 
 version = "1.0.0"
-group = "de.unisaarland.pcdfanalyser"
+group = "com.github.dependables"
 
 sqldelight {
     database("CacheDatabase") { // This will be the name of the generated database class.
@@ -40,7 +40,6 @@ plugins {
 }
 
 repositories {
-    //mavenLocal()
     maven("https://jitpack.io")
 
     // Use Maven Central for resolving dependencies.
@@ -71,15 +70,7 @@ dependencies {
     api("org.apache.commons:commons-math3:3.6.1")
 
     // PCDF core
-//    implementation("de.unisaarland.cdp:pcdf-core:1.0.0")
-    implementation("com.github.dependables:pcdf-core:196624b")
-
-    val exposedVersion: String by project
-    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
-    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
-    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
-    implementation("org.jetbrains.exposed:exposed-jodatime:$exposedVersion")
-    implementation("org.xerial:sqlite-jdbc:3.30.1")
+    implementation("com.github.dependables:pcdf-core:1.0.1")
 
     implementation("com.squareup.sqldelight:sqlite-driver:1.5.0")
 }
