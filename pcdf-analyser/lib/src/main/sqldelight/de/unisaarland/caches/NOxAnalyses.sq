@@ -1,0 +1,19 @@
+CREATE TABLE NOxAnalyses (
+      fileName TEXT NOT NULL,
+      nox REAL,
+      analyserVersion INTEGER AS Int NOT NULL,
+      PRIMARY KEY (fileName)
+);
+
+selectAll:
+SELECT *
+FROM NOxAnalyses;
+
+insert:
+INSERT INTO NOxAnalyses(fileName, nox, analyserVersion)
+VALUES (?,?,?);
+
+selectByName:
+SELECT *
+FROM NOxAnalyses
+WHERE fileName = ?;

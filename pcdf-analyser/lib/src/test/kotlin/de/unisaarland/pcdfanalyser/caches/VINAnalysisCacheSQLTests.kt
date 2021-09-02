@@ -7,7 +7,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class VINAnalysisCacheTests {
+class VINAnalysisCacheSQLTests {
 
     val donation1 = ClassLoader.getSystemClassLoader().getResource("donation1.ppcdf")
 
@@ -21,14 +21,22 @@ class VINAnalysisCacheTests {
         if (cacheFile.exists()) {
             cacheFile.delete()
         }
-
-        val vinCache = VINAnalysisCache(AnalysisCache.sharedDatabase(cacheFile))
+        val db = AnalysisCache.sharedDatabase(cacheFile)
+        val vinCache = VINAnalysisCache(db)
         assertFalse("Analysis result must NOT be cached") { vinCache.hasAnalysisResultForFile(file) }
         val result = vinCache.analysisResultForFile(file, false)
-        assertFalse("Analysis result must NOT be cached (2)") { vinCache.hasAnalysisResultForFile(file) }
+        assertFalse("Analysis result must NOT be cached (2)") {
+            vinCache.hasAnalysisResultForFile(
+                file
+            )
+        }
         vinCache.analysisResultForFile(file, true)
         assertTrue("Analysis result MUST be cached") { vinCache.hasAnalysisResultForFile(file) }
-        assertEquals(result, vinCache.cachedAnalysisResultForFile(file), "Computed and cached value must be equal.")
-    }
+        assertEquals(
+            result,
+            vinCache.cachedAnalysisResultForFile(file),
+            "Computed and cached value must be equal."
+        )
 
+    }
 }

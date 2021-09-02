@@ -1,0 +1,22 @@
+CREATE TABLE SupportedPIDsAnalyses (
+    fileName TEXT NOT NULL,
+    mode INTEGER AS Int NOT NULL,
+    PID INTEGER AS Int NOT NULL,
+    isSupported INTEGER AS Boolean NOT NULL,
+    isAvailable INTEGER AS Boolean NOT NULL,
+    analyserVersion INTEGER AS Int NOT NULL
+);
+
+selectAll:
+SELECT *
+FROM SupportedPIDsAnalyses;
+
+insert:
+INSERT INTO SupportedPIDsAnalyses(
+fileName, mode, PID, isSupported, isAvailable, analyserVersion
+) VALUES (?,?,?,?,?,?);
+
+selectByName:
+SELECT *
+FROM SupportedPIDsAnalyses
+WHERE fileName = ?;

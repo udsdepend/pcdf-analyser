@@ -1,0 +1,19 @@
+CREATE TABLE VINAnalyses (
+  fileName TEXT NOT NULL,
+  VIN TEXT,
+  analyserVersion INTEGER AS Int NOT NULL,
+  PRIMARY KEY (fileName)
+);
+
+selectAll:
+SELECT *
+FROM VINAnalyses;
+
+insert:
+INSERT INTO VINAnalyses(fileName, VIN, analyserVersion)
+VALUES (?, ? ,?);
+
+selectByName:
+SELECT *
+FROM VINAnalyses
+WHERE fileName = ?;

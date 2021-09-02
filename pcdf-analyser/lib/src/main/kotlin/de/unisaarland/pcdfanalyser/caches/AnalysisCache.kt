@@ -1,6 +1,8 @@
 package de.unisaarland.pcdfanalyser.caches
 
-import org.jetbrains.exposed.sql.Database
+import com.squareup.sqldelight.db.SqlDriver
+import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
+import de.unisaarland.caches.CacheDatabase
 import java.io.File
 
 abstract class AnalysisCache<V> {
@@ -13,19 +15,25 @@ abstract class AnalysisCache<V> {
 
 
     companion object {
-        private val sharedDatabases: MutableMap<File, Database> = mutableMapOf()
+        private val sharedDatabases: MutableMap<File, CacheDatabase> = mutableMapOf()
 
-        fun sharedDatabase(cacheFile: File): Database {
-            if (sharedDatabases.containsKey(cacheFile)) {
-                return sharedDatabases[cacheFile]!!
+        fun sharedDatabase(
+            cacheFile: File,
+            driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${cacheFile.path}")
+        ): CacheDatabase {
+            return if (sharedDatabases.containsKey(cacheFile)) {
+                sharedDatabases[cacheFile]!!
             } else {
                 println("Creating a new database instance for $cacheFile")
-                val db = Database.connect("jdbc:sqlite:${cacheFile.absolutePath}", "org.sqlite.JDBC")
+                try {
+                    CacheDatabase.Schema.create(driver)
+                } catch (e: Exception) {
+                    // file was already an exisiting database
+                }
+                val db = CacheDatabase(driver)
                 sharedDatabases[cacheFile] = db
-                return db
+                db
             }
-
         }
     }
-
 }
