@@ -11,18 +11,28 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.targets
 buildscript {
     repositories {
         mavenLocal()
+        mavenCentral()
+        google()
     }
-
+    dependencies {
+        classpath("com.squareup.sqldelight:gradle-plugin:1.5.0")
+    }
 }
 
 version = "1.0.0"
 group = "de.unisaarland.pcdfanalyser"
 
+sqldelight {
+    database("CacheDatabase") { // This will be the name of the generated database class.
+        packageName = "de.unisaarland.caches"
+    }
+}
 
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
     id("org.jetbrains.kotlin.jvm") version "1.5.21"
 
+    id("com.squareup.sqldelight") version "1.5.0"
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
 
@@ -68,6 +78,8 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-jodatime:$exposedVersion")
     implementation("org.xerial:sqlite-jdbc:3.30.1")
+
+    implementation("com.squareup.sqldelight:sqlite-driver:1.5.0")
 }
 
 configure<PublishingExtension> {

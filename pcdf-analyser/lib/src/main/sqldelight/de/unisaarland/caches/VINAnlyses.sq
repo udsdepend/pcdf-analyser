@@ -1,0 +1,9 @@
+CREATE TABLE VINAnlyses (
+  file_name TEXT,
+  anylsis_result TEXT,
+  anylser_version INTEGER,
+  PRIMARY KEY (file_name)
+);
+
+INSERT INTO VINAnlyses (file_name, anylsis_result, anylser_version)
+VALUES ("Test name", "WBA234234", 1);
