@@ -1,5 +1,6 @@
 package de.unisaarland.pcdfanalyser.caches
 
+import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
 import de.unisaarland.caches.CacheDatabase
 import java.io.File
@@ -16,12 +17,14 @@ abstract class AnalysisCache<V> {
     companion object {
         private val sharedDatabases: MutableMap<File, CacheDatabase> = mutableMapOf()
 
-        fun sharedDatabase(cacheFile: File): CacheDatabase {
+        fun sharedDatabase(
+            cacheFile: File,
+            driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${cacheFile.path}")
+        ): CacheDatabase {
             return if (sharedDatabases.containsKey(cacheFile)) {
                 sharedDatabases[cacheFile]!!
             } else {
                 println("Creating a new database instance for $cacheFile")
-                val driver = JdbcSqliteDriver("jdbc:sqlite:${cacheFile.path}")
                 try {
                     CacheDatabase.Schema.create(driver)
                 } catch (e: Exception) {
@@ -33,5 +36,4 @@ abstract class AnalysisCache<V> {
             }
         }
     }
-
 }
