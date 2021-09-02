@@ -20,7 +20,7 @@ buildscript {
 }
 
 version = "1.0.0"
-group = "com.github.dependables"
+group = "de.unisaarland.pcdfanalyser"
 
 sqldelight {
     database("CacheDatabase") { // This will be the name of the generated database class.
