@@ -1,8 +1,8 @@
 CREATE TABLE VINAnalysis (
-  file_name TEXT NOT NULL,
-  anylsis_result TEXT,
-  anylser_version INTEGER AS Int NOT NULL,
-  PRIMARY KEY (file_name)
+  fileName TEXT NOT NULL,
+  VIN TEXT,
+  analyserVersion INTEGER AS Int NOT NULL,
+  PRIMARY KEY (fileName)
 );
 
 selectAll:
@@ -10,10 +10,10 @@ SELECT *
 FROM VINAnalysis;
 
 insert:
-INSERT INTO VINAnalysis(file_name, anylsis_result, anylser_version)
+INSERT INTO VINAnalysis(fileName, VIN, analyserVersion)
 VALUES (?, ? ,?);
 
 selectByName:
 SELECT *
 FROM VINAnalysis
-WHERE file_name = ?;
+WHERE fileName = ?;

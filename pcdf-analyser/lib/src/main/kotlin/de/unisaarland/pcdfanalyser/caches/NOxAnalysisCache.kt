@@ -1,7 +1,5 @@
 package de.unisaarland.pcdfanalyser.caches
 
-import com.squareup.sqldelight.db.SqlDriver
-import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
 import de.unisaarland.caches.CacheDatabase
 import de.unisaarland.caches.NOxAnalysisQueries
 import de.unisaarland.pcdfanalyser.FileEventStream
@@ -9,31 +7,19 @@ import de.unisaarland.pcdfanalyser.analysers.NOxAnalyser
 import java.io.File
 
 class NOxAnalysisCache(
-    file: File,
+    database: CacheDatabase,
     val analysisCacheDelegate: AnalysisCacheDelegate<Double?> = AnalysisCacheDelegate {
         NOxAnalyser(it)
     }
 ) : AnalysisCache<Double?>() {
-    private val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${file.path}")
-    private val database: CacheDatabase
-    private val queries: NOxAnalysisQueries
-
-    init {
-        try {
-            CacheDatabase.Schema.create(driver)
-        } catch (e: Exception) {
-            // Table was already created
-        }
-        database = CacheDatabase(driver)
-        queries = database.nOxAnalysisQueries
-    }
+    private val queries: NOxAnalysisQueries = database.nOxAnalysisQueries
 
     private fun fetchAnalysisResult(pcdfFile: File): Pair<Boolean, Double?> {
         var result: Pair<Boolean, Double?>? = null
         queries.selectByName(pcdfFile.absolutePath).executeAsList().forEach {
             result = Pair(
                 true,
-                it.anylsis_result
+                it.nox
             )
         }
 

@@ -21,14 +21,22 @@ class SupportedPIDsAnalysisCacheTests {
         if (cacheFile.exists()) {
             cacheFile.delete()
         }
-
-        val pidCache = SupportedPIDsAnalysisCache(cacheFile)
+        val db = AnalysisCache.sharedDatabase(cacheFile)
+        val pidCache = SupportedPIDsAnalysisCache(db)
         assertFalse("Analysis result must NOT be cached") { pidCache.hasAnalysisResultForFile(file) }
         val result = pidCache.analysisResultForFile(file, false)
         println(result)
-        assertFalse("Analysis result must NOT be cached (2)") { pidCache.hasAnalysisResultForFile(file) }
+        assertFalse("Analysis result must NOT be cached (2)") {
+            pidCache.hasAnalysisResultForFile(
+                file
+            )
+        }
         pidCache.analysisResultForFile(file, true)
         assertTrue("Analysis result MUST be cached") { pidCache.hasAnalysisResultForFile(file) }
-        assertEquals(result, pidCache.cachedAnalysisResultForFile(file), "Computed and cached value must be equal.")
+        assertEquals(
+            result,
+            pidCache.cachedAnalysisResultForFile(file),
+            "Computed and cached value must be equal."
+        )
     }
 }

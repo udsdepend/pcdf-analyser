@@ -1,7 +1,5 @@
 package de.unisaarland.pcdfanalyser.caches
 
-import com.squareup.sqldelight.db.SqlDriver
-import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
 import de.unisaarland.caches.CacheDatabase
 import de.unisaarland.caches.SupportedPIDsAnalysisQueries
 import de.unisaarland.pcdfanalyser.FileEventStream
@@ -12,7 +10,7 @@ import de.unisaarland.pcdfanalyser.model.ParameterSupport.Record
 import java.io.File
 
 class SupportedPIDsAnalysisCache(
-    val file: File,
+    val database: CacheDatabase,
     val analysisCacheDelegate: AnalysisCacheDelegate<ParameterSupport> = AnalysisCacheDelegate {
         SupportedPIDsAnalyser(
             it
@@ -20,26 +18,14 @@ class SupportedPIDsAnalysisCache(
     }
 ) : AnalysisCache<ParameterSupport>() {
 
-    private val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${file.path}")
-    private val database: CacheDatabase
-    private val queries: SupportedPIDsAnalysisQueries
-
-    init {
-        try {
-            CacheDatabase.Schema.create(driver)
-        } catch (e: Exception) {
-            // Table was already created
-        }
-        database = CacheDatabase(driver)
-        queries = database.supportedPIDsAnalysisQueries
-    }
+    private val queries: SupportedPIDsAnalysisQueries = database.supportedPIDsAnalysisQueries
 
     private fun fetchAnalysisResult(pcdfFile: File): ParameterSupport? {
         val records = mutableListOf<Record>()
         queries.selectByName(pcdfFile.absolutePath).executeAsList().forEach {
             records.add(
                 Record(
-                    ParameterID(it.pid, it.mode),
+                    ParameterID(it.PID, it.mode),
                     it.isSupported,
                     it.isAvailable
                 )

@@ -1,8 +1,8 @@
 CREATE TABLE NOxAnalysis (
-      file_name TEXT NOT NULL,
-      anylsis_result REAL,
-      anylser_version INTEGER AS Int NOT NULL,
-      PRIMARY KEY (file_name)
+      fileName TEXT NOT NULL,
+      nox REAL,
+      analyserVersion INTEGER AS Int NOT NULL,
+      PRIMARY KEY (fileName)
 );
 
 selectAll:
@@ -10,10 +10,10 @@ SELECT *
 FROM NOxAnalysis;
 
 insert:
-INSERT INTO NOxAnalysis(file_name, anylsis_result, anylser_version)
+INSERT INTO NOxAnalysis(fileName, nox, analyserVersion)
 VALUES (?,?,?);
 
 selectByName:
 SELECT *
 FROM NOxAnalysis
-WHERE file_name = ?;
+WHERE fileName = ?;

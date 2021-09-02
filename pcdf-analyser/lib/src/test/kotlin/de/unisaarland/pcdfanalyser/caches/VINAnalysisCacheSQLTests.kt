@@ -21,8 +21,8 @@ class VINAnalysisCacheSQLTests {
         if (cacheFile.exists()) {
             cacheFile.delete()
         }
-
-        val vinCache = VINAnalysisCache(cacheFile)
+        val db = AnalysisCache.sharedDatabase(cacheFile)
+        val vinCache = VINAnalysisCache(db)
         assertFalse("Analysis result must NOT be cached") { vinCache.hasAnalysisResultForFile(file) }
         val result = vinCache.analysisResultForFile(file, false)
         assertFalse("Analysis result must NOT be cached (2)") {
