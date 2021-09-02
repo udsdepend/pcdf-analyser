@@ -1,7 +1,7 @@
 package de.unisaarland.pcdfanalyser.caches
 
 import de.unisaarland.caches.CacheDatabase
-import de.unisaarland.caches.NOxAnalysisQueries
+import de.unisaarland.caches.NOxAnalysesQueries
 import de.unisaarland.pcdfanalyser.FileEventStream
 import de.unisaarland.pcdfanalyser.analysers.NOxAnalyser
 import java.io.File
@@ -12,7 +12,7 @@ class NOxAnalysisCache(
         NOxAnalyser(it)
     }
 ) : AnalysisCache<Double?>() {
-    private val queries: NOxAnalysisQueries = database.nOxAnalysisQueries
+    private val queries: NOxAnalysesQueries = database.nOxAnalysesQueries
 
     private fun fetchAnalysisResult(pcdfFile: File): Pair<Boolean, Double?> {
         var result: Pair<Boolean, Double?>? = null

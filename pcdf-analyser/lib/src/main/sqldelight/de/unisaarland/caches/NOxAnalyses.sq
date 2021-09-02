@@ -1,4 +1,4 @@
-CREATE TABLE NOxAnalysis (
+CREATE TABLE NOxAnalyses (
       fileName TEXT NOT NULL,
       nox REAL,
       analyserVersion INTEGER AS Int NOT NULL,
@@ -7,13 +7,13 @@ CREATE TABLE NOxAnalysis (
 
 selectAll:
 SELECT *
-FROM NOxAnalysis;
+FROM NOxAnalyses;
 
 insert:
-INSERT INTO NOxAnalysis(fileName, nox, analyserVersion)
+INSERT INTO NOxAnalyses(fileName, nox, analyserVersion)
 VALUES (?,?,?);
 
 selectByName:
 SELECT *
-FROM NOxAnalysis
+FROM NOxAnalyses
 WHERE fileName = ?;

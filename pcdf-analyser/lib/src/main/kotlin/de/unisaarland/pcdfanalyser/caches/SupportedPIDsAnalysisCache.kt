@@ -1,7 +1,7 @@
 package de.unisaarland.pcdfanalyser.caches
 
 import de.unisaarland.caches.CacheDatabase
-import de.unisaarland.caches.SupportedPIDsAnalysisQueries
+import de.unisaarland.caches.SupportedPIDsAnalysesQueries
 import de.unisaarland.pcdfanalyser.FileEventStream
 import de.unisaarland.pcdfanalyser.analysers.SupportedPIDsAnalyser
 import de.unisaarland.pcdfanalyser.model.ParameterID
@@ -18,7 +18,7 @@ class SupportedPIDsAnalysisCache(
     }
 ) : AnalysisCache<ParameterSupport>() {
 
-    private val queries: SupportedPIDsAnalysisQueries = database.supportedPIDsAnalysisQueries
+    private val queries: SupportedPIDsAnalysesQueries = database.supportedPIDsAnalysesQueries
 
     private fun fetchAnalysisResult(pcdfFile: File): ParameterSupport? {
         val records = mutableListOf<Record>()
@@ -48,15 +48,17 @@ class SupportedPIDsAnalysisCache(
     }
 
     private fun addAnalysisResultToCache(pcdfFile: File, result: ParameterSupport) {
-        for (record in result.parameterRecords) {
-            queries.insert(
-                pcdfFile.absolutePath,
-                record.parameterID.mode,
-                record.parameterID.id,
-                record.supported,
-                record.available,
-                VERSION
-            )
+        queries.transaction {
+            for (record in result.parameterRecords) {
+                queries.insert(
+                    pcdfFile.absolutePath,
+                    record.parameterID.mode,
+                    record.parameterID.id,
+                    record.supported,
+                    record.available,
+                    VERSION
+                )
+            }
         }
     }
 

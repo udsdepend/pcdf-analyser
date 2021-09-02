@@ -1,4 +1,4 @@
-CREATE TABLE VINAnalysis (
+CREATE TABLE VINAnalyses (
   fileName TEXT NOT NULL,
   VIN TEXT,
   analyserVersion INTEGER AS Int NOT NULL,
@@ -7,13 +7,13 @@ CREATE TABLE VINAnalysis (
 
 selectAll:
 SELECT *
-FROM VINAnalysis;
+FROM VINAnalyses;
 
 insert:
-INSERT INTO VINAnalysis(fileName, VIN, analyserVersion)
+INSERT INTO VINAnalyses(fileName, VIN, analyserVersion)
 VALUES (?, ? ,?);
 
 selectByName:
 SELECT *
-FROM VINAnalysis
+FROM VINAnalyses
 WHERE fileName = ?;

@@ -1,7 +1,7 @@
 package de.unisaarland.pcdfanalyser.caches
 
 import de.unisaarland.caches.CacheDatabase
-import de.unisaarland.caches.VINAnalysisQueries
+import de.unisaarland.caches.VINAnalysesQueries
 import de.unisaarland.pcdfanalyser.FileEventStream
 import de.unisaarland.pcdfanalyser.analysers.VINAnalyser
 import java.io.File
@@ -15,7 +15,7 @@ class VINAnalysisCache(
     }
 ) :
     AnalysisCache<String?>() {
-    private val queries: VINAnalysisQueries = database.vINAnalysisQueries
+    private val queries: VINAnalysesQueries = database.vINAnalysesQueries
 
     private fun fetchAnalysisResult(pcdfFile: File): Pair<Boolean, String?> {
         var result: Pair<Boolean, String?>? = null

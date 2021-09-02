@@ -1,4 +1,4 @@
-CREATE TABLE SupportedPIDsAnalysis (
+CREATE TABLE SupportedPIDsAnalyses (
     fileName TEXT NOT NULL,
     mode INTEGER AS Int NOT NULL,
     PID INTEGER AS Int NOT NULL,
@@ -9,14 +9,14 @@ CREATE TABLE SupportedPIDsAnalysis (
 
 selectAll:
 SELECT *
-FROM SupportedPIDsAnalysis;
+FROM SupportedPIDsAnalyses;
 
 insert:
-INSERT INTO SupportedPIDsAnalysis(
+INSERT INTO SupportedPIDsAnalyses(
 fileName, mode, PID, isSupported, isAvailable, analyserVersion
 ) VALUES (?,?,?,?,?,?);
 
 selectByName:
 SELECT *
-FROM SupportedPIDsAnalysis
+FROM SupportedPIDsAnalyses
 WHERE fileName = ?;
