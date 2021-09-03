@@ -1,3 +1,0 @@
-[submodule "pcdf-core"]
-	path = pcdf-core
-	url = ssh://git@dgit.cs.uni-saarland.de:2222/software-doping/pcdf-core.git
