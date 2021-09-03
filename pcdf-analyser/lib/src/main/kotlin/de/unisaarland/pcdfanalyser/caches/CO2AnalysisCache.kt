@@ -1,25 +1,25 @@
 package de.unisaarland.pcdfanalyser.caches
 
+import de.unisaarland.caches.CO2AnalysesQueries
 import de.unisaarland.caches.CacheDatabase
-import de.unisaarland.caches.NOxAnalysesQueries
+import de.unisaarland.pcdfanalyser.analysers.CO2Analyser
 import de.unisaarland.pcdfanalyser.eventStream.FileEventStream
-import de.unisaarland.pcdfanalyser.analysers.NOxAnalyser
 import java.io.File
 
-class NOxAnalysisCache(
+class CO2AnalysisCache(
     database: CacheDatabase,
     val analysisCacheDelegate: AnalysisCacheDelegate<Double?> = AnalysisCacheDelegate {
-        NOxAnalyser(it)
+        CO2Analyser(it)
     }
 ) : AnalysisCache<Double?>() {
-    private val queries: NOxAnalysesQueries = database.nOxAnalysesQueries
+    private val queries: CO2AnalysesQueries = database.cO2AnalysesQueries
 
     private fun fetchAnalysisResult(pcdfFile: File): Pair<Boolean, Double?> {
         var result: Pair<Boolean, Double?>? = null
         queries.selectByName(pcdfFile.absolutePath).executeAsList().forEach {
             result = Pair(
                 true,
-                it.nox
+                it.co2
             )
         }
 

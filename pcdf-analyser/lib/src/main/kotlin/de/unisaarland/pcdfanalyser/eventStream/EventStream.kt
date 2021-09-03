@@ -1,4 +1,4 @@
-package de.unisaarland.pcdfanalyser
+package de.unisaarland.pcdfanalyser.eventStream
 
 import pcdfEvent.PCDFEvent
 

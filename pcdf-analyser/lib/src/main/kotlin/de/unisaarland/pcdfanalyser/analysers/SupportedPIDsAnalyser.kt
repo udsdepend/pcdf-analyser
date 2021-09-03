@@ -1,6 +1,6 @@
 package de.unisaarland.pcdfanalyser.analysers
 
-import de.unisaarland.pcdfanalyser.EventStream
+import de.unisaarland.pcdfanalyser.eventStream.EventStream
 import de.unisaarland.pcdfanalyser.model.ParameterID
 import de.unisaarland.pcdfanalyser.model.ParameterSupport
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.OBDIntermediateEvent
@@ -32,7 +32,7 @@ class SupportedPIDsAnalyser(eventStream: EventStream): Analyser<ParameterSupport
             }
         }
 
-        println("supported: ${supported}, available: $available")
+        //println("computed PIDS -> supported: ${supported}, available: $available")
 
         // Merge lists
         val supportedSorted = supported.sorted()

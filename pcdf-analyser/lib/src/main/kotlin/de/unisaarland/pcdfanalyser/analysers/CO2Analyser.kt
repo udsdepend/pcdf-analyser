@@ -1,10 +1,10 @@
 package de.unisaarland.pcdfanalyser.analysers
 
 import de.unisaarland.pcdfanalyser.eventStream.EventStream
-import pcdfUtilities.NOxMassFlowComputation
-import pcdfUtilities.computeNOxMGPerKM
+import pcdfUtilities.CO2MassFlowComputation
+import pcdfUtilities.computeCO2MGPerKM
 
-class NOxAnalyser(eventStream: EventStream): Analyser<Double?>(eventStream) {
+class CO2Analyser(eventStream: EventStream): Analyser<Double?>(eventStream) {
 
     override fun analysisIsAvailable(): Boolean {
         // ToDo: Computing this function is not trivial without doing the actual computation
@@ -13,8 +13,8 @@ class NOxAnalyser(eventStream: EventStream): Analyser<Double?>(eventStream) {
 
     override fun analyse(): Double? {
         try {
-            val noxStream = NOxMassFlowComputation(eventStream)
-            return computeNOxMGPerKM(noxStream)
+            val noxStream = CO2MassFlowComputation(eventStream)
+            return computeCO2MGPerKM(noxStream)
         } catch (error: Exception) {
             println(error)
             return null

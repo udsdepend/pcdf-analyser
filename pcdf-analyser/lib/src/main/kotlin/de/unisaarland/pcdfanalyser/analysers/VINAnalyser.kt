@@ -1,6 +1,6 @@
 package de.unisaarland.pcdfanalyser.analysers
 
-import de.unisaarland.pcdfanalyser.EventStream
+import de.unisaarland.pcdfanalyser.eventStream.EventStream
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.singleComponentEvents.VINEvent
 
 class VINAnalyser(eventStream: EventStream): Analyser<String?>(eventStream) {

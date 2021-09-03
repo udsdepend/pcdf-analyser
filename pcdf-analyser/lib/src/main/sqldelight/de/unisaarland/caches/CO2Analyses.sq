@@ -1,0 +1,19 @@
+CREATE TABLE CO2Analyses (
+      fileName TEXT NOT NULL,
+      co2 REAL,
+      analyserVersion INTEGER AS Int NOT NULL,
+      PRIMARY KEY (fileName)
+);
+
+selectAll:
+SELECT *
+FROM CO2Analyses;
+
+insert:
+INSERT INTO CO2Analyses(fileName, co2, analyserVersion)
+VALUES (?,?,?);
+
+selectByName:
+SELECT *
+FROM CO2Analyses
+WHERE fileName = ?;

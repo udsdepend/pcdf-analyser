@@ -1,11 +1,12 @@
-package de.unisaarland.pcdfanalyser
+package de.unisaarland.pcdfanalyser.eventStream
 
 import pcdfEvent.PCDFEvent
 import java.io.File
 import java.io.Reader
 import java.nio.charset.Charset
 
-class FileEventStream private constructor(private val reader: Reader, private val cacheEvents: Boolean = true): EventStream {
+class FileEventStream private constructor(private val reader: Reader, private val cacheEvents: Boolean = true):
+    EventStream {
     // if cacheEvents is false, the stream can be iterated only once!
 
     constructor(reader: Reader): this(reader, true)

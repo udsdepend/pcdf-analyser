@@ -2,7 +2,7 @@ package de.unisaarland.pcdfanalyser.caches
 
 import de.unisaarland.caches.CacheDatabase
 import de.unisaarland.caches.VINAnalysesQueries
-import de.unisaarland.pcdfanalyser.FileEventStream
+import de.unisaarland.pcdfanalyser.eventStream.FileEventStream
 import de.unisaarland.pcdfanalyser.analysers.VINAnalyser
 import java.io.File
 

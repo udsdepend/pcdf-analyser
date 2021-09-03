@@ -2,7 +2,7 @@ package de.unisaarland.pcdfanalyser.caches
 
 import de.unisaarland.caches.CacheDatabase
 import de.unisaarland.caches.SupportedPIDsAnalysesQueries
-import de.unisaarland.pcdfanalyser.FileEventStream
+import de.unisaarland.pcdfanalyser.eventStream.FileEventStream
 import de.unisaarland.pcdfanalyser.analysers.SupportedPIDsAnalyser
 import de.unisaarland.pcdfanalyser.model.ParameterID
 import de.unisaarland.pcdfanalyser.model.ParameterSupport
