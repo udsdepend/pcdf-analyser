@@ -99,7 +99,7 @@ fun PCDFEvent.getFuelAirEquivalenceRatio(): Double? {
 //    return this.fuelrate
 //}
 fun FuelRateComputation.ComputedFuelRateEvent.getComputedFuelRate(): Double? {
-    return this.fuelrate
+    return this.fuelRate
 }
 
 fun PCDFEvent.getComputedFuelRate(): Double? {

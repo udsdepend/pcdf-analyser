@@ -6,10 +6,18 @@ import de.unisaarland.pcdfanalyser.model.ParameterSupport
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.OBDIntermediateEvent
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.singleComponentEvents.SupportedPidsEvent
 
+/**
+ * Scans [eventStream] to find all PIDs that are supported by the car,
+ * and all PIDs that are available (have been logged) in [eventStream].
+ */
 class SupportedPIDsAnalyser(eventStream: EventStream): Analyser<ParameterSupport>(eventStream) {
 
     private var result: ParameterSupport? = null
 
+    /**
+     * Performs the actual analysis. The result is stored in an internal variable and can be accessed by [analyse].
+     * If called twice, the analysis is not repeated.
+     */
     fun prepare() {
         if (result != null) {
             return
@@ -31,8 +39,6 @@ class SupportedPIDsAnalyser(eventStream: EventStream): Analyser<ParameterSupport
                 else -> { /* no-op */ }
             }
         }
-
-        //println("computed PIDS -> supported: ${supported}, available: $available")
 
         // Merge lists
         val supportedSorted = supported.sorted()
@@ -71,30 +77,20 @@ class SupportedPIDsAnalyser(eventStream: EventStream): Analyser<ParameterSupport
     }
 
 
+    /**
+     * This analysis is always available.
+     * @return always true
+     */
     override fun analysisIsAvailable(): Boolean {
         return true
     }
 
+    /**
+     * Calls [prepare]
+     * @return the result of the analysis
+     */
     override fun analyse(): ParameterSupport {
         prepare()
         return result!!
     }
-
-
-    companion object {
-        const val analysisName = "SupportedPIDs"
-    }
-
-
-//    class AnalysisResult(val supportedPIDs: List<ParameterID>, val availablePIDs: List<ParameterID>) {
-//
-//        val consistent: Boolean
-//        get() = supportedPIDs.toSet().containsAll(availablePIDs)
-//
-//        override fun toString(): String {
-//            val supportedString = supportedPIDs.map {it.toString()}
-//            val availableString = availablePIDs.map {it.toString()}
-//            return "SupportedPIDs {supported=[$supportedString], available=[$availableString]}"
-//        }
-//    }
 }

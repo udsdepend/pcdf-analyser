@@ -6,6 +6,11 @@ import de.unisaarland.pcdfanalyser.eventStream.getNOX
 import pcdfEvent.EventType
 import pcdfEvent.PCDFEvent
 
+/**
+ * PCDF stream transducer to insert NOx mass flow in [inputStream].
+ * Uses [ExhaustMassFlowComputation] (and [FuelRateComputation]) to compute the exhaust mass flow.
+ * Computation is done according to the EU Commission Regulation 2017/1151, Appendix 4.
+ */
 class NOxMassFlowComputation(inputStream: EventStream) : AbstractStreamTransducer(ExhaustMassFlowComputation(inputStream)) {
     private val inputStreamHasNOxEvents = inputStream.any { it is ComputedNOxMassFlowEvent }
     init {
@@ -73,6 +78,10 @@ class NOxMassFlowComputation(inputStream: EventStream) : AbstractStreamTransduce
         }
     }
 
+    /**
+     * Custom PCDF event to represent NOx mass flow.
+     * @property noxMassFlow: The NOx mass flow in g/s.
+     */
     class ComputedNOxMassFlowEvent(timestamp: NanoSeconds, val noxMassFlow: Double): PCDFEvent("NOxMassFlowComputation", EventType.CUSTOM, timestamp) {
 
     }

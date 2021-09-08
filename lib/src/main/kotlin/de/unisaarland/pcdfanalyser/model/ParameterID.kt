@@ -2,6 +2,9 @@ package de.unisaarland.pcdfanalyser.model
 
 import pcdfEvent.events.obdEvents.OBDCommand
 
+/**
+ * Represents parameter IDs, i.e., pairs of a mode (or service) and the (numeric) parameter ID.
+ */
 class ParameterID(val id: Int, val mode: Int = 1) : Comparable<ParameterID> {
 
     override fun compareTo(other: ParameterID): Int {

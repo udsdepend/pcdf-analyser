@@ -9,6 +9,13 @@ import de.unisaarland.pcdfanalyser.model.ParameterSupport
 import de.unisaarland.pcdfanalyser.model.ParameterSupport.Record
 import java.io.File
 
+/**
+ * Class representing cached supported/available PIDs analysis results.
+ * @constructor requires a cache database object. Optionally, the default analysis method may be
+ * replaced by a custom [analysisCacheDelegate].
+ *
+ * For database queries @see SupportedPIDsAnalyses.sq.
+ */
 class SupportedPIDsAnalysisCache(
     val database: CacheDatabase,
     val analysisCacheDelegate: AnalysisCacheDelegate<ParameterSupport> = AnalysisCacheDelegate {
@@ -22,6 +29,9 @@ class SupportedPIDsAnalysisCache(
 
     private fun fetchAnalysisResult(pcdfFile: File): ParameterSupport? {
         val records = mutableListOf<Record>()
+        /**
+         * For each combination of mode and PID, there is one row in the database, each with a flag for supported and available
+         */
         queries.selectByName(pcdfFile.absolutePath).executeAsList().forEach {
             records.add(
                 Record(

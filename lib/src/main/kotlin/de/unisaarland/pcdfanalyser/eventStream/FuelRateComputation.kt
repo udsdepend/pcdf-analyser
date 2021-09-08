@@ -10,6 +10,13 @@ import pcdfEvent.EventType
 import pcdfEvent.PCDFEvent
 import pcdfEvent.events.obdEvents.OBDCommand
 
+/**
+ * PCDF stream transducer to insert exhaust fuel rate events in [inputStream].
+ * Concrete computation depends on the available sensor data.
+ * Requires (OBD) fuel rate events or mass air flow events. In the latter case, air-fuel equivalence ratio
+ * can increase approximation precision.
+ * Computation is done according to the EU Commission Regulation 2017/1151, Appendix 4.
+ */
 class FuelRateComputation(inputStream: EventStream) : AbstractStreamTransducer(inputStream) {
     private val parameterConfiguration = getParameterConfigurationForInputStream(inputStream)
     private val inputStreamHasComputedFuelrateEvents = inputStream.any { it is ComputedFuelRateEvent }
@@ -38,25 +45,25 @@ class FuelRateComputation(inputStream: EventStream) : AbstractStreamTransducer(i
 
 
     private open class ParameterConfiguration(
-        val noxPid: Int?,
+        //val noxPid: Int?,
         val massAirFlowPid: Int?,
         val fuelRatePid: Int?,
         val fuelAirEquivalencePid: Int?
     ) {
-        val isConfig1 = noxPid != null && massAirFlowPid != null && fuelRatePid != null
+        val isConfig1 = massAirFlowPid != null && fuelRatePid != null
 
-        val isConfig2 = noxPid != null && massAirFlowPid != null && fuelAirEquivalencePid != null && fuelRatePid == null
+        val isConfig2 = massAirFlowPid != null && fuelAirEquivalencePid != null && fuelRatePid == null
 
-        val isConfig3 = noxPid != null && massAirFlowPid != null && fuelRatePid == null && fuelAirEquivalencePid == null
+        val isConfig3 = massAirFlowPid != null && fuelRatePid == null && fuelAirEquivalencePid == null
 
-        val isInvalid = noxPid == null || massAirFlowPid == null
+        val isInvalid = massAirFlowPid == null
 
         val isValid = !isInvalid
 
-        val allPids = listOfNotNull(noxPid, massAirFlowPid, fuelRatePid, fuelAirEquivalencePid)
+        val allPids = listOfNotNull(massAirFlowPid, fuelRatePid, fuelAirEquivalencePid)
 
         override fun toString(): String {
-            val pidMap = "internal: {noxPID = 0x${noxPid?.toString(16)}, massAirFlowPID = 0x${massAirFlowPid?.toString(16)}, fuelRatePID = 0x${fuelRatePid?.toString(16)}, fuelAirEquivalenceRatioPID = 0x${fuelAirEquivalencePid?.toString(16)}}"
+            val pidMap = "internal: {massAirFlowPID = 0x${massAirFlowPid?.toString(16)}, fuelRatePID = 0x${fuelRatePid?.toString(16)}, fuelAirEquivalenceRatioPID = 0x${fuelAirEquivalencePid?.toString(16)}}"
             val validity = "valid: $isValid"
             val config = "config: " + when {
                 isConfig1 -> "1"
@@ -78,13 +85,13 @@ class FuelRateComputation(inputStream: EventStream) : AbstractStreamTransducer(i
         private fun getParameterConfigurationForInputStream(inputStream: EventStream): ParameterConfiguration {
             val availablePIDs = SupportedPIDsAnalyser(inputStream).analyse() //inputStream.availablePIDs
 
-            val noxPid = when {
-                availablePIDs.isParameterAvailable(ParameterID(OBDCommand.NOX_SENSOR.pid)) -> OBDCommand.NOX_SENSOR.pid
-                availablePIDs.isParameterAvailable(ParameterID(OBDCommand.NOX_SENSOR_ALTERNATIVE.pid)) -> OBDCommand.NOX_SENSOR_ALTERNATIVE.pid
-                availablePIDs.isParameterAvailable(ParameterID(OBDCommand.NOX_SENSOR_CORRECTED.pid)) -> OBDCommand.NOX_SENSOR_CORRECTED.pid
-                availablePIDs.isParameterAvailable(ParameterID(OBDCommand.NOX_SENSOR_CORRECTED_ALTERNATIVE.pid)) -> OBDCommand.NOX_SENSOR_CORRECTED_ALTERNATIVE.pid
-                else -> null
-            }
+//            val noxPid = when {
+//                availablePIDs.isParameterAvailable(ParameterID(OBDCommand.NOX_SENSOR.pid)) -> OBDCommand.NOX_SENSOR.pid
+//                availablePIDs.isParameterAvailable(ParameterID(OBDCommand.NOX_SENSOR_ALTERNATIVE.pid)) -> OBDCommand.NOX_SENSOR_ALTERNATIVE.pid
+//                availablePIDs.isParameterAvailable(ParameterID(OBDCommand.NOX_SENSOR_CORRECTED.pid)) -> OBDCommand.NOX_SENSOR_CORRECTED.pid
+//                availablePIDs.isParameterAvailable(ParameterID(OBDCommand.NOX_SENSOR_CORRECTED_ALTERNATIVE.pid)) -> OBDCommand.NOX_SENSOR_CORRECTED_ALTERNATIVE.pid
+//                else -> null
+//            }
 
             val massFlowPid = when {
                 availablePIDs.isParameterAvailable(ParameterID(OBDCommand.MAF_AIR_FLOW_RATE.pid)) -> OBDCommand.MAF_AIR_FLOW_RATE.pid
@@ -104,7 +111,6 @@ class FuelRateComputation(inputStream: EventStream) : AbstractStreamTransducer(i
             }
 
             return ParameterConfiguration(
-                noxPid,
                 massFlowPid,
                 fuelRatePid,
                 fuelAirEquivalencePid
@@ -174,7 +180,6 @@ class FuelRateComputation(inputStream: EventStream) : AbstractStreamTransducer(i
                 if (canComputeNewValue) {
                     val newValue = computeNewValue()
                     nextEvent = ComputedFuelRateEvent(nextInputEvent.timestamp, newValue)
-//                    PCDFEvent("FuelRateComputation", EventType.ANALYSER, nextInputEvent.timestamp, eventData)
                     resetVariables()
                 }
                 return nextInputEvent
@@ -182,18 +187,12 @@ class FuelRateComputation(inputStream: EventStream) : AbstractStreamTransducer(i
         }
     }
 
+    /**
+     * Custom PCDF event to represent fuel rate.
+     * @property fuelRate: The fuel rate in L/h.
+     */
+    class ComputedFuelRateEvent(timestamp: NanoSeconds, val fuelRate: Double): PCDFEvent("FuelRateComputation", EventType.CUSTOM, timestamp) {
 
-    class ComputedFuelRateEvent(timestamp: NanoSeconds, val fuelrate: Double): PCDFEvent("FuelRateComputation", EventType.CUSTOM, timestamp) {
-
-        fun t() {
-            this.fuelrate
-        }
     }
 
-
-//    class ComputedFuelRateEventData(val fuelrate: Double): PCDFEvent() {
-//        override fun getPattern(): PCDFDataPattern {
-//            TODO("Not yet implemented")
-//        }
-//    }
 }

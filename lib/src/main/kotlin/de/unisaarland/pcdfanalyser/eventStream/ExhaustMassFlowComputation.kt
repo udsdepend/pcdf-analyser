@@ -6,12 +6,16 @@ import de.unisaarland.pcdfanalyser.eventStream.getMassAirFlow
 import pcdfEvent.EventType
 import pcdfEvent.PCDFEvent
 
-
+/**
+ * PCDF stream transducer to insert exhaust mass flow events in [inputStream] from mass air flow and fuel rate.
+ * Uses [FuelRateComputation] to compute or conveniently access the fuel rate.
+ * Computation is done according to the EU Commission Regulation 2017/1151, Appendix 4.
+ */
 class ExhaustMassFlowComputation(inputStream: EventStream) : AbstractStreamTransducer(FuelRateComputation(inputStream)) {
     private val inputStreamHasExhaustMassFlowEvents = inputStream.any { it is ExhaustMassFlowEvent }
     init {
         if (inputStreamHasExhaustMassFlowEvents) {
-            println("Notice: MAF already computed.")
+            println("Notice: Exhaust mass flow already computed.")
         }
     }
 
@@ -81,6 +85,10 @@ class ExhaustMassFlowComputation(inputStream: EventStream) : AbstractStreamTrans
         }
     }
 
+    /**
+     * Custom PCDF event to represent exhaust mass flow.
+     * @property exhaustMassFlow: The exhaust mass flow in g/s.
+     */
     class ExhaustMassFlowEvent(timestamp: NanoSeconds, val exhaustMassFlow: Double): PCDFEvent("ExhaustMassFlowComputation", EventType.CUSTOM, timestamp) {
 
     }

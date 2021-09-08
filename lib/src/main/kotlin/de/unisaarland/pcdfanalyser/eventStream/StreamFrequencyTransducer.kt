@@ -7,6 +7,10 @@ import pcdfEvent.events.obdEvents.obdIntermediateEvents.OBDIntermediateEvent
 
 // `frequency` values per event type per second
 // !! Works only for OBD events!!
+/**
+ * Class under construction, use with care!
+ * PCDF event stream transducer to reduce the frequency of events (e.g., to get a stream with a frequency of 1Hz).
+ */
 class StreamFrequencyTransducer(inputStream: EventStream, val frequency: Int): AbstractStreamTransducer(inputStream) {
 
     override fun iterator(): Iterator<PCDFEvent> {

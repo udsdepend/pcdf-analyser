@@ -6,6 +6,14 @@ import de.unisaarland.pcdfanalyser.eventStream.FileEventStream
 import de.unisaarland.pcdfanalyser.analysers.NOxAnalyser
 import java.io.File
 
+
+/**
+ * Class representing cached NOx analysis results.
+ * @constructor requires a cache database object. Optionally, the default analysis method may be
+ * replaced by a custom [analysisCacheDelegate].
+ *
+ * For database queries @see NOxAnalyses.sq.
+ */
 class NOxAnalysisCache(
     database: CacheDatabase,
     val analysisCacheDelegate: AnalysisCacheDelegate<Double?> = AnalysisCacheDelegate {

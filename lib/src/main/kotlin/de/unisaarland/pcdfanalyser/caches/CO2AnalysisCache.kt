@@ -6,6 +6,13 @@ import de.unisaarland.pcdfanalyser.analysers.CO2Analyser
 import de.unisaarland.pcdfanalyser.eventStream.FileEventStream
 import java.io.File
 
+/**
+ * Class representing cached CO2 analysis results.
+ * @constructor requires a cache database object. Optionally, the default analysis method may be
+ * replaced by a custom [analysisCacheDelegate].
+ *
+ * For database queries @see CO2Analyses.sq.
+ */
 class CO2AnalysisCache(
     database: CacheDatabase,
     val analysisCacheDelegate: AnalysisCacheDelegate<Double?> = AnalysisCacheDelegate {

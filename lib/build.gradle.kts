@@ -19,8 +19,8 @@ buildscript {
     }
 }
 
-version = "1.0.0"
-group = "de.unisaarland.pcdfanalyser"
+version = "0.1.0"
+group = "com.github.udsdepend"
 
 sqldelight {
     database("CacheDatabase") { // This will be the name of the generated database class.
@@ -70,7 +70,7 @@ dependencies {
     api("org.apache.commons:commons-math3:3.6.1")
 
     // PCDF core
-    implementation("com.github.dependables:pcdf-core:1.0.1")
+    implementation("com.github.udsdepend:pcdf-core:1.0.2")
 
     implementation("com.squareup.sqldelight:sqlite-driver:1.5.0")
 }
@@ -78,8 +78,11 @@ dependencies {
 configure<PublishingExtension> {
     //publishing {
         publications {
-            create<MavenPublication>("pcdfanalyser") {
+            create<MavenPublication>("release") {
                 from(components["java"])
+                groupId ="com.github.udsdepend"
+                artifactId = "pcdf-analyser"
+                version = "0.1.0"
             }
         }
     //}

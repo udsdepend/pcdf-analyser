@@ -4,6 +4,9 @@ import de.unisaarland.pcdfanalyser.eventStream.EventStream
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.singleComponentEvents.SpeedEvent
 
 
+/**
+ * Auxiliary types and functions to handle time.
+ */
 typealias NanoSeconds = Long
 typealias Seconds = Double
 fun nanoSecondsToSeconds(nanoSeconds: NanoSeconds): Seconds {
@@ -13,6 +16,11 @@ fun Long.nanoSecondsToSecondsTimestamp(): Int {
     return (this / 1_000_000_000).toInt()
 }
 
+/**
+ * Computes the average absolute amount of NOx emitted in [noxStream].
+ * [noxStream] must contain [NOxMassFlowComputation.ComputedNOxMassFlowEvent] events and [SpeedEvent] events.
+ * @return Average absolute amount of NOx in mg/km, or null if [noxStream] is incompatible.
+ */
 fun computeNOxMGPerKM(noxStream: EventStream): Double? {
     val onlyNOxStream = StreamFilter(noxStream) { event -> event is NOxMassFlowComputation.ComputedNOxMassFlowEvent }
     val noxPairs = onlyNOxStream.pairIterator()
@@ -52,8 +60,13 @@ fun computeNOxMGPerKM(noxStream: EventStream): Double? {
     return noxSum * 1000.0 / distanceSum
 }
 
-fun computeCO2MGPerKM(noxStream: EventStream): Double? {
-    val onlyCO2Stream = StreamFilter(noxStream) { event ->
+/**
+ * Computes the average absolute amount of NOx emitted in [co2Stream].
+ * [co2Stream] must contain [CO2MassFlowComputation.ComputedCO2MassFlowEvent] events and [SpeedEvent] events.
+ * @return Average absolute amount of NOx in g/km, or null if [co2Stream] is incompatible.
+ */
+fun computeCO2MGPerKM(co2Stream: EventStream): Double? {
+    val onlyCO2Stream = StreamFilter(co2Stream) { event ->
         event is CO2MassFlowComputation.ComputedCO2MassFlowEvent }
     val co2Pairs = onlyCO2Stream.pairIterator()
     if (!co2Pairs.hasNext()) {
@@ -70,7 +83,7 @@ fun computeCO2MGPerKM(noxStream: EventStream): Double? {
         co2Sum += totalCO2
     }
 
-    val onlySpeedStream = StreamFilter(noxStream) { it is SpeedEvent }
+    val onlySpeedStream = StreamFilter(co2Stream) { it is SpeedEvent }
     val speedPairs = onlySpeedStream.pairIterator()
     if (!speedPairs.hasNext()) {
         // ToDo: This computation is incorrect if speed values are available only at the beginning (or end) of the stream
