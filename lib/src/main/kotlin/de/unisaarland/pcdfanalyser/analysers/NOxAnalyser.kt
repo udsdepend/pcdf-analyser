@@ -1,6 +1,7 @@
 package de.unisaarland.pcdfanalyser.analysers
 
 import de.unisaarland.pcdfanalyser.eventStream.EventStream
+import de.unisaarland.pcdfanalyser.eventStream.FaultyNOxSensorElimination
 import pcdfUtilities.NOxMassFlowComputation
 import pcdfUtilities.computeNOxMGPerKM
 
@@ -24,7 +25,7 @@ class NOxAnalyser(eventStream: EventStream): Analyser<Double?>(eventStream) {
      */
     override fun analyse(): Double? {
         try {
-            val noxStream = NOxMassFlowComputation(eventStream)
+            val noxStream = NOxMassFlowComputation(FaultyNOxSensorElimination(eventStream))
             return computeNOxMGPerKM(noxStream)
         } catch (error: Exception) {
             println(error)

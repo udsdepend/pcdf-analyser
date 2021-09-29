@@ -7,6 +7,8 @@ import pcdfEvent.events.obdEvents.OBDCommand
  */
 class ParameterID(val id: Int, val mode: Int = 1) : Comparable<ParameterID> {
 
+    constructor(obdCommand: OBDCommand): this(obdCommand.pid, obdCommand.mode)
+
     override fun compareTo(other: ParameterID): Int {
         val modeCompare = mode.compareTo(other.mode)
         return if (modeCompare == 0) {

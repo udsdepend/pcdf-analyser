@@ -13,8 +13,14 @@ class ParameterSupport(parameterRecords: List<Record> = listOf()) {
     val parameterRecords: List<Record>
     get() = records
 
+    val supportedPIDs: List<ParameterID>
+    get() = parameterRecords.filter { it.supported }.map { it.parameterID }
+
+    val availablePIDs: List<ParameterID>
+        get() = parameterRecords.filter { it.available }.map { it.parameterID }
+
     /**
-     * Inser or update the record for [parameterID]. The new record contains information about
+     * Insert or update the record for [parameterID]. The new record contains information about
      * whether the PID is [supported] (according to the SupportedPIDs PID) and whether it is
      * [available] in a certain event stream (i.e., if values of this PID appear in the stream).
      */

@@ -2,6 +2,8 @@ package de.unisaarland.pcdfanalyser.eventStream
 
 import pcdfEvent.PCDFEvent
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.multiComponentEvents.*
+import pcdfEvent.events.obdEvents.obdIntermediateEvents.reducedComponentEvents.FuelRateReducedEvent
+import pcdfEvent.events.obdEvents.obdIntermediateEvents.reducedComponentEvents.NOXReducedEvent
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.singleComponentEvents.FuelAirEquivalenceRatioEvent
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.singleComponentEvents.FuelRateEvent
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.singleComponentEvents.MAFAirFlowRateEvent
@@ -15,6 +17,18 @@ fun PCDFEvent.getNOX(): Int? {
         is NOXSensorCorrectedEvent -> this.getNOX()
         is NOXSensorCorrectedAlternativeEvent -> this.getNOX()
         else -> null
+    }
+}
+
+fun PCDFEvent.reduce(): PCDFEvent {
+    return when (this) {
+        is NOXSensorEvent -> this.reduce()
+        is NOXSensorAlternativeEvent -> this.reduce()
+        is NOXSensorCorrectedEvent -> this.reduce()
+        is NOXSensorCorrectedAlternativeEvent -> this.reduce()
+        is FuelRateEvent -> this.reduce()
+        is FuelRateMultiEvent -> this.reduce()
+        else -> this
     }
 }
 
@@ -40,6 +54,62 @@ fun NOXSensorEvent.getNOX(): Int? {
     val allValues = listOf(this.sensor1_1, this.sensor1_2, this.sensor2_1, this.sensor2_2)
     val availableValues = allValues.filter { it >= 0 }
     return availableValues.minOrNull()
+}
+
+fun NOXSensorEvent.reduce(): NOXReducedEvent {
+    return NOXReducedEvent(
+        this.source,
+        this.timestamp,
+        this.bytes,
+        this.pid,
+        this.mode,
+        this.sensor1_1,
+        this.sensor1_2,
+        this.sensor2_1,
+        this.sensor2_2,
+    )
+}
+
+fun NOXSensorCorrectedEvent.reduce(): NOXReducedEvent {
+    return NOXReducedEvent(
+        this.source,
+        this.timestamp,
+        this.bytes,
+        this.pid,
+        this.mode,
+        this.sensor1_1,
+        this.sensor1_2,
+        this.sensor2_1,
+        this.sensor2_2,
+    )
+}
+
+fun NOXSensorAlternativeEvent.reduce(): NOXReducedEvent {
+    return NOXReducedEvent(
+        this.source,
+        this.timestamp,
+        this.bytes,
+        this.pid,
+        this.mode,
+        this.sensor1_1,
+        this.sensor1_2,
+        this.sensor2_1,
+        this.sensor2_2,
+    )
+}
+
+fun NOXSensorCorrectedAlternativeEvent.reduce(): NOXReducedEvent {
+    return NOXReducedEvent(
+        this.source,
+        this.timestamp,
+        this.bytes,
+        this.pid,
+        this.mode,
+        this.sensor1_1,
+        this.sensor1_2,
+        this.sensor2_1,
+        this.sensor2_2,
+    )
 }
 
 
@@ -83,6 +153,39 @@ fun PCDFEvent.getFuelRate(): Double? {
         is FuelRateMultiEvent -> getFuelRate()
         else -> null
     }
+}
+
+
+fun FuelRateMultiEvent.reduce(): FuelRateReducedEvent {
+    return FuelRateReducedEvent(
+        this.source,
+        this.timestamp,
+        this.bytes,
+        this.pid,
+        this.mode,
+        if (this.engineFuelRate != -1.0) {
+            this.engineFuelRate / 832.0 * 3600.0
+        } else {
+            -1.0
+        },
+        if (this.vehicleFuelRate != -1.0) {
+            this.vehicleFuelRate / 832.0 * 3600.0
+        } else {
+            -1.0
+        }
+    )
+}
+
+fun FuelRateEvent.reduce(): FuelRateReducedEvent {
+    return FuelRateReducedEvent(
+        this.source,
+        this.timestamp,
+        this.bytes,
+        this.pid,
+        this.mode,
+        this.engineFuelRate,
+        -1.0,
+    )
 }
 
 
