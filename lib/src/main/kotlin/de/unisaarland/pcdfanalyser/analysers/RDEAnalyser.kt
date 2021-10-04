@@ -61,27 +61,27 @@ class RDEAnalyser(inputStream: EventStream): Analyser<RDEResult?>(inputStream) {
 
 
 
-        specBody = javaClass.classLoader.getResource("lola-spec/spec_body.lola")?.readText() ?: ""
+        specBody = javaClass.classLoader.getResource("lola-spec/spec_body.lola")?.readText()!!
 
-        specHeader = javaClass.classLoader.getResource("lola-spec/spec_header.lola")?.readText() ?: ""
+        specHeader = javaClass.classLoader.getResource("lola-spec/spec_header.lola")?.readText()!!
 
-        specFuelRateInput = javaClass.classLoader.getResource("lola-spec/spec_fuel_rate_input.lola")?.readText() ?: ""
+        specFuelRateInput = javaClass.classLoader.getResource("lola-spec/spec_fuel_rate_input.lola")?.readText()!!
 
-        specFuelRateToCo2Diesel = javaClass.classLoader.getResource("lola-spec/spec_fuel_rate_to_co2_diesel.lola")?.readText() ?: ""
+        specFuelRateToCo2Diesel = javaClass.classLoader.getResource("lola-spec/spec_fuel_rate_to_co2_diesel.lola")?.readText()!!
 
-        specFuelRateToEMFDiesel = javaClass.classLoader.getResource("lola-spec/spec_fuel_rate_to_emf_diesel.lola")?.readText() ?: ""
+        specFuelRateToEMFDiesel = javaClass.classLoader.getResource("lola-spec/spec_fuel_rate_to_emf_diesel.lola")?.readText()!!
 
-        specFuelRateToCo2Gasoline = javaClass.classLoader.getResource("lola-spec/spec_fuelrate_to_co2_gasoline.lola")?.readText() ?: ""
+        specFuelRateToCo2Gasoline = javaClass.classLoader.getResource("lola-spec/spec_fuelrate_to_co2_gasoline.lola")?.readText()!!
 
-        specFuelRateToEMFGasoline = javaClass.classLoader.getResource("lola-spec/spec_fuelrate_to_emf_gasoline.lola")?.readText() ?: ""
+        specFuelRateToEMFGasoline = javaClass.classLoader.getResource("lola-spec/spec_fuelrate_to_emf_gasoline.lola")?.readText()!!
 
-        specMAFToFuelRateDieselFAE = javaClass.classLoader.getResource("lola-spec/spec_maf_to_fuel_rate_diesel_fae.lola")?.readText() ?: ""
+        specMAFToFuelRateDieselFAE = javaClass.classLoader.getResource("lola-spec/spec_maf_to_fuel_rate_diesel_fae.lola")?.readText()!!
 
-        specMAFToFuelRateDiesel = javaClass.classLoader.getResource("lola-spec/spec_maf_to_fuel_rate_diesel.lola")?.readText() ?: ""
+        specMAFToFuelRateDiesel = javaClass.classLoader.getResource("lola-spec/spec_maf_to_fuel_rate_diesel.lola")?.readText()!!
 
-        specMAFToFuelRateGasolineFAE = javaClass.classLoader.getResource("lola-spec/spec_maf_to_fuel_rate_gasoline_fae.lola")?.readText() ?: ""
+        specMAFToFuelRateGasolineFAE = javaClass.classLoader.getResource("lola-spec/spec_maf_to_fuel_rate_gasoline_fae.lola")?.readText()!!
 
-        specMAFToFuelRateGasoline = javaClass.classLoader.getResource("lola-spec/spec_maf_to_fuel_rate_gasoline.lola")?.readText() ?: ""
+        specMAFToFuelRateGasoline = javaClass.classLoader.getResource("lola-spec/spec_maf_to_fuel_rate_gasoline.lola")?.readText()!!
 
     }
 
@@ -413,6 +413,8 @@ class RDEAnalyser(inputStream: EventStream): Analyser<RDEResult?>(inputStream) {
             }
         }
         s.append(specBody)
+        val tempFile = File("temp_spec.lola")
+        tempFile.writeText(s.toString())
         return s.toString()
     }
 
