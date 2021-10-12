@@ -1,5 +1,7 @@
 package de.unisaarland.pcdfanalyser.model
 
+import pcdfEvent.events.obdEvents.OBDCommand
+
 /**
  * Represents a set of supported and available parameter IDs.
  * A parameter ID is <i>supported</i> if it appears in the list of supported PIDs received from PIDs 0x00, 0x20, etc.
