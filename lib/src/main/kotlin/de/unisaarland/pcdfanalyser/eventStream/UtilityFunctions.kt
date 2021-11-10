@@ -4,6 +4,9 @@ import de.unisaarland.pcdfanalyser.eventStream.EventStream
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.singleComponentEvents.SpeedEvent
 
 
+
+val NOX_MAX = 65535
+
 /**
  * Auxiliary types and functions to handle time.
  */

@@ -10,6 +10,7 @@ import pcdfEvent.events.obdEvents.obdIntermediateEvents.multiComponentEvents.NOX
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.multiComponentEvents.NOXSensorCorrectedAlternativeEvent
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.multiComponentEvents.NOXSensorCorrectedEvent
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.multiComponentEvents.NOXSensorEvent
+import pcdfUtilities.NOX_MAX
 import pcdfUtilities.NOxMassFlowComputation
 import pcdfUtilities.computeNOxMGPerKM
 
@@ -49,7 +50,7 @@ class NOxAnalyser(eventStream: EventStream): Analyser<Double?>(eventStream) {
                 }
 
             val sensorVerdict: (PCDFEvent) -> FaultySensorElimination.FaultySensorEliminationIterator.SensorState = {event ->
-                val NOX_MAX = 65535
+
                 when (noxReader(event)) {
                     NOX_MAX -> FaultySensorElimination.FaultySensorEliminationIterator.SensorState.Faulty
                     null -> FaultySensorElimination.FaultySensorEliminationIterator.SensorState.Irrelevant
