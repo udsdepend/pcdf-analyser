@@ -1,6 +1,6 @@
 CREATE TABLE TripTypeAnalyses (
   fileName TEXT NOT NULL,
-  TYPE TEXT,
+  type TEXT,
   analyserVersion INTEGER AS Int NOT NULL,
   PRIMARY KEY (fileName)
 );
@@ -10,7 +10,7 @@ SELECT *
 FROM TripTypeAnalyses;
 
 insert:
-INSERT INTO TripTypeAnalyses(fileName, TYPE, analyserVersion)
+INSERT INTO TripTypeAnalyses(fileName, type, analyserVersion)
 VALUES (?, ?, ?);
 
 selectByName:
