@@ -19,7 +19,7 @@ buildscript {
     }
 }
 
-version = "0.1.1"
+version = "0.1.3"
 group = "com.github.udsdepend"
 
 sqldelight {
@@ -71,9 +71,10 @@ dependencies {
     api("org.apache.commons:commons-math3:3.6.1")
 
     // PCDF core
-    implementation("com.github.udsdepend:pcdf-core:1.0.3")
+    implementation("com.github.udsdepend:pcdf-core:1.0.4")
 
     implementation("com.squareup.sqldelight:sqlite-driver:1.5.0")
+    implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.1.0")
 }
 
 configure<PublishingExtension> {
@@ -83,7 +84,7 @@ configure<PublishingExtension> {
                 from(components["java"])
                 groupId ="com.github.udsdepend"
                 artifactId = "pcdf-analyser"
-                version = "0.1.1"
+                version = "0.1.3"
             }
         }
     //}

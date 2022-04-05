@@ -1,0 +1,19 @@
+CREATE TABLE TripTypeAnalyses (
+  fileName TEXT NOT NULL,
+  type TEXT,
+  analyserVersion INTEGER AS Int NOT NULL,
+  PRIMARY KEY (fileName)
+);
+
+selectAll:
+SELECT *
+FROM TripTypeAnalyses;
+
+insert:
+INSERT INTO TripTypeAnalyses(fileName, type, analyserVersion)
+VALUES (?, ?, ?);
+
+selectByName:
+SELECT *
+FROM TripTypeAnalyses
+WHERE fileName = ?;

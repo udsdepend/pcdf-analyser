@@ -1,17 +1,19 @@
-package pcdfUtilities
+package de.unisaarland.pcdfanalyser.eventStream
 
-import de.unisaarland.pcdfanalyser.eventStream.EventStream
-import de.unisaarland.pcdfanalyser.eventStream.getComputedExhaustMassFlow
-import de.unisaarland.pcdfanalyser.eventStream.getNOX
 import pcdfEvent.EventType
 import pcdfEvent.PCDFEvent
+import pcdfUtilities.AbstractStreamTransducer
+import pcdfUtilities.ExhaustMassFlowComputation
+import pcdfUtilities.NanoSeconds
 
 /**
  * PCDF stream transducer to insert NOx mass flow in [inputStream].
  * Uses [ExhaustMassFlowComputation] (and [FuelRateComputation]) to compute the exhaust mass flow.
  * Computation is done according to the EU Commission Regulation 2017/1151, Appendix 4.
  */
-class NOxMassFlowComputation(inputStream: EventStream) : AbstractStreamTransducer(ExhaustMassFlowComputation(inputStream)) {
+class NOxMassFlowComputation(inputStream: EventStream, val noxReader: (PCDFEvent) -> Int? = {it.getNOX()}) : AbstractStreamTransducer(
+    ExhaustMassFlowComputation(inputStream)
+) {
     private val inputStreamHasNOxEvents = inputStream.any { it is ComputedNOxMassFlowEvent }
     init {
         if (inputStreamHasNOxEvents)
@@ -24,12 +26,12 @@ class NOxMassFlowComputation(inputStream: EventStream) : AbstractStreamTransduce
         return if (inputStreamHasNOxEvents) {
             inputStream.iterator()
         } else {
-            NOxMassFlowIterator(inputStream.iterator())
+            NOxMassFlowIterator(inputStream.iterator(), noxReader)
         }
     }
 
 
-    private class NOxMassFlowIterator(val inputIterator: Iterator<PCDFEvent>): Iterator<PCDFEvent> {
+    private class NOxMassFlowIterator(val inputIterator: Iterator<PCDFEvent>, val noxReader: (PCDFEvent) -> Int?): Iterator<PCDFEvent> {
         var exhaustMassFlow: Double? = null
         var noxPpm: Int? = null
 
@@ -40,7 +42,8 @@ class NOxMassFlowComputation(inputStream: EventStream) : AbstractStreamTransduce
 
         fun processEvent(event: PCDFEvent) {
             event.getComputedExhaustMassFlow()?.let { exhaustMassFlow = it }
-            event.getNOX()?.let { noxPpm = it }
+            //event.getNOX()?.let { noxPpm = it }
+            noxReader(event)?.let { noxPpm = it }
         }
 
         fun computeNewValue(): Double {
