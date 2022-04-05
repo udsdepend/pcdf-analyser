@@ -1,6 +1,8 @@
 package de.unisaarland.pcdfanalyser
 
 import de.unisaarland.pcdfanalyser.analysers.CSVExporter
+import de.unisaarland.pcdfanalyser.analysers.SimResult
+import de.unisaarland.pcdfanalyser.analysers.TripTypeAnalyser
 import de.unisaarland.pcdfanalyser.eventStream.FaultySensorElimination
 import de.unisaarland.pcdfanalyser.eventStream.FileEventStream
 import org.junit.Test
@@ -103,5 +105,14 @@ class CSVExporterTest {
 
         val exporter = CSVExporter(valuesOfInterest, outputFile)
         exporter.analyse()
+    }
+
+    @Test
+    fun testDetection() {
+        val inputStream = FileEventStream(File("../audi_a6new_trip4.ppcdf").absoluteFile)
+        val detector = TripTypeAnalyser(inputStream)
+
+        assert(detector.analyse() == SimResult.RDE)
+
     }
 }

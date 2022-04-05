@@ -19,7 +19,7 @@ buildscript {
     }
 }
 
-version = "0.1.2"
+version = "0.1.3"
 group = "com.github.udsdepend"
 
 sqldelight {
@@ -84,7 +84,7 @@ configure<PublishingExtension> {
                 from(components["java"])
                 groupId ="com.github.udsdepend"
                 artifactId = "pcdf-analyser"
-                version = "0.1.2"
+                version = "0.1.3"
             }
         }
     //}
