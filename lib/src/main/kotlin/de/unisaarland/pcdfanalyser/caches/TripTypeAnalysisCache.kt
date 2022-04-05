@@ -22,7 +22,7 @@ class TripTypeAnalysisCache(
         queries.selectByName(pcdfFile.absolutePath).executeAsList().forEach{
             result = Pair(
                 true,
-                it.TYPE?.let { it1 -> SimResult.valueOf(it1) }
+                it.type?.let { it1 -> SimResult.valueOf(it1) }
             )
         }
 
