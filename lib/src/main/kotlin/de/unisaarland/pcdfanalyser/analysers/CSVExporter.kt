@@ -3,6 +3,7 @@ package de.unisaarland.pcdfanalyser.analysers
 import com.github.doyaaaaaken.kotlincsv.dsl.context.WriteQuoteMode
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import de.unisaarland.pcdfanalyser.eventStream.EventStream
+import de.unisaarland.pcdfanalyser.eventStream.NOxMassFlowComputation
 import de.unisaarland.pcdfanalyser.model.ParameterID
 import pcdfEvent.PCDFEvent
 import pcdfEvent.events.AnalyserEvent
@@ -42,13 +43,13 @@ class CSVExporter(
                 }
             }
 
-            val columnNames = listOf("Timestamp") + collectColumnNames().toList()
+            val columnNames = listOf("Timestamp [ns]") + collectColumnNames().toList()
 
             writer.open(outputFile) {
                 writeRow(columnNames)
                 for (row in rows) {
-                    val timestamp = row.timestamp
-                    val rowData = columnNames.map { if(it == "Timestamp") timestamp.toString() else row[it] ?: "" }
+                    val timestamp = row.timestamp - rows[0].timestamp
+                    val rowData = columnNames.map { if(it == "Timestamp [ns]") timestamp.toString() else row[it] ?: "" }
                     writeRow(rowData)
                 }
             }
@@ -84,6 +85,7 @@ class CSVExporter(
         return when (event) {
             is OBDIntermediateEvent -> cellsForOBDIntermediateEvent(event)
             is AnalyserEvent -> cellForAnalyserEvent(event)
+            is NOxMassFlowComputation.ComputedNOxMassFlowEvent -> listOf(Cell("Computed absolute NOx [g/s]", event.noxMassFlow))
             else -> listOf(Cell(event.javaClass.name, event.toString()))
         }
     }
@@ -108,12 +110,12 @@ class CSVExporter(
                 event.noxAdsorberDesulfurizationInProgress?.let { res.add(Cell("noxAdsorberDesulfurizationInProgress", it)) }
                 event.particulateFilterRegenInProgress?.let { res.add(Cell("particulateFilterRegenInProgress", it)) }
                 event.particulateFilterActiveRegen?.let { res.add(Cell("particulateFilterActiveRegen", it)) }
-                event.normalizedTriggerForPFRegen?.let { res.add(Cell("normalizedTriggerForPFRegen", it)) }
-                event.averageDistanceBetweenPFRegens?.let { res.add(Cell("averageDistanceBetweenPFRegens", it)) }
-                event.averageTimeBetweenPFRegens?.let { res.add(Cell("averageTimeBetweenPFRegens", it)) }
+                event.normalizedTriggerForPFRegen?.let { res.add(Cell("normalizedTriggerForPFRegen [%]", it)) }
+                event.averageDistanceBetweenPFRegens?.let { res.add(Cell("averageDistanceBetweenPFRegens [km]", it)) }
+                event.averageTimeBetweenPFRegens?.let { res.add(Cell("averageTimeBetweenPFRegens [min]", it)) }
                 res
             }
-            is SpeedEvent -> listOf(Cell("Speed", event.speed))
+            is SpeedEvent -> listOf(Cell("Speed [km/h]", event.speed))
             is FuelRateEvent -> listOf(Cell("Fuel Rate", event.engineFuelRate))
             else -> {
                 // ToDo: Add support for more sensors!!
@@ -145,7 +147,7 @@ class CSVExporter(
 
     class Row(val timestamp: Long, val cells: Collection<Cell>) {
         operator fun get(key: String): Any? {
-            if (key == "Timestamp") {
+            if (key == "Timestamp [ns]") {
                 return timestamp
             } else {
                 for (cell in cells) {

@@ -11,7 +11,7 @@ import pcdfEvent.events.obdEvents.obdIntermediateEvents.multiComponentEvents.NOX
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.multiComponentEvents.NOXSensorCorrectedEvent
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.multiComponentEvents.NOXSensorEvent
 import pcdfUtilities.NOX_MAX
-import pcdfUtilities.NOxMassFlowComputation
+import de.unisaarland.pcdfanalyser.eventStream.NOxMassFlowComputation
 import pcdfUtilities.computeNOxMGPerKM
 
 /**

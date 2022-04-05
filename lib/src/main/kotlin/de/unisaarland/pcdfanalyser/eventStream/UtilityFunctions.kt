@@ -1,6 +1,7 @@
 package pcdfUtilities
 
 import de.unisaarland.pcdfanalyser.eventStream.EventStream
+import de.unisaarland.pcdfanalyser.eventStream.NOxMassFlowComputation
 import pcdfEvent.events.obdEvents.obdIntermediateEvents.singleComponentEvents.SpeedEvent
 
 
